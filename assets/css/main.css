@@ -1,0 +1,448 @@
+/* =========================================================
+   Método Yuka — CSS não crítico (tudo abaixo da 1ª dobra
+   + quiz + animações). Carregado sem bloquear o render.
+   As variáveis (:root) vivem no CSS crítico inline.
+   ========================================================= */
+
+/* ===== Seções ===== */
+.section {
+  padding: 4.25rem 0;
+}
+.section--alt {
+  background: var(--c-bg-alt);
+}
+.section__title {
+  font-size: clamp(1.65rem, 3.6vw, 2.25rem);
+  text-align: center;
+  margin-bottom: 1rem;
+  text-wrap: balance;
+}
+.section__subtitle {
+  text-align: center;
+  max-width: 38rem;
+  margin: 0 auto 2.6rem;
+}
+.section__cta {
+  text-align: center;
+  margin: 0;
+}
+.micro {
+  font-size: 0.82rem;
+  color: var(--c-muted);
+  text-align: center;
+  margin: 0.95rem auto 0;
+  max-width: 30rem;
+}
+
+/* ===== Listas com ícone (✗ dores / ✓ checklists) ===== */
+.icon-list {
+  list-style: none;
+  margin: 2.2rem auto 0;
+  padding: 0;
+  max-width: 36rem;
+  display: grid;
+  gap: 0.95rem;
+  color: var(--c-text);
+}
+.icon-list li {
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+}
+.ico {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  margin-top: 0.3rem;
+}
+.ico--red {
+  color: var(--c-red);
+}
+.ico--green {
+  color: var(--c-green);
+}
+.closing-note {
+  font-style: italic;
+  text-align: center;
+  max-width: 34rem;
+  margin: 2.5rem auto 0;
+  color: var(--c-text);
+}
+
+/* ===== Grid dos 4 pilares ===== */
+.pillars {
+  display: grid;
+  gap: 1.4rem;
+  margin-bottom: 2.6rem;
+}
+@media (min-width: 48rem) {
+  .pillars {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.pillar-card {
+  background: var(--c-card);
+  border-radius: var(--radius);
+  padding: 1.7rem 1.7rem 1.5rem;
+  box-shadow: var(--shadow-card);
+}
+.pillar-card__title {
+  font-size: 1.28rem;
+  color: var(--c-green-dark);
+  margin-bottom: 0.6rem;
+}
+.pillar-card__question {
+  color: var(--c-text);
+  margin-bottom: 1.1rem;
+}
+.pillar-card__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+  font-size: 0.92rem;
+  color: var(--c-text);
+}
+.pillar-card__list li {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+}
+.pillar-card__list .ico {
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-top: 0.28rem;
+}
+
+/* ===== Caixa de destaque (borda lateral) ===== */
+.qualify-box {
+  background: var(--c-white);
+  border-left: 5px solid var(--c-green-dark);
+  border-radius: 6px;
+  box-shadow: var(--shadow-card);
+  padding: 1.1rem 1.4rem;
+  max-width: 36rem;
+  margin: 2.4rem auto 0;
+  color: var(--c-text);
+}
+.qualify-box p {
+  margin: 0;
+}
+
+/* ===== "Quem é Thabata Andrade" ===== */
+.about {
+  display: grid;
+  gap: 2.5rem;
+  align-items: start;
+}
+@media (min-width: 56rem) {
+  .about {
+    grid-template-columns: 0.8fr 1.2fr;
+    gap: 3.5rem;
+  }
+}
+.about__title {
+  font-size: clamp(1.65rem, 3.6vw, 2.25rem);
+  margin-bottom: 1.3rem;
+}
+.about__media .media-frame {
+  width: min(100%, 20rem);
+}
+.about .icon-list {
+  margin: 1.7rem 0 0;
+  max-width: none;
+  gap: 0.8rem;
+}
+
+/* ===== "Fale conosco" ===== */
+.contact-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2.2rem;
+}
+.contact-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 2.9rem; /* alvo de toque ≥ 44px com padding */
+  padding: 0.7rem 1.5rem;
+  border-radius: 999px;
+  color: var(--c-white);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+.contact-btn:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+.contact-btn svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: currentColor;
+}
+.contact-btn--wa {
+  background: #25d366;
+}
+.contact-btn--ig {
+  background: linear-gradient(45deg, #f58529, #dd2a7b, #8134af);
+}
+.contact-btn--yt {
+  background: #e02424;
+}
+
+/* ===== Rodapé ===== */
+.footer {
+  background: #191d19;
+  color: #9aa096;
+  text-align: center;
+  padding: 2.2rem 0;
+  font-size: 0.85rem;
+}
+.footer p {
+  margin: 0.2rem 0;
+}
+
+/* ===== Barra de CTA fixa (só mobile, após rolar o hero) ===== */
+.sticky-cta {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 55;
+  background: var(--c-bg);
+  border-top: 1px solid #e2dfd4;
+  padding: 0.6rem 0.9rem calc(0.6rem + env(safe-area-inset-bottom));
+  transform: translateY(100%);
+  transition: transform 0.25s ease;
+}
+.sticky-cta.is-visible {
+  transform: translateY(0);
+}
+.sticky-cta .btn {
+  width: 100%;
+}
+@media (min-width: 48rem) {
+  .sticky-cta {
+    display: none;
+  }
+}
+
+/* ===== Reveal on scroll (IntersectionObserver adiciona .is-visible) =====
+   Só anima quando o <html> tem a classe .js — sem JS, tudo fica visível. */
+.js .reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+.js .reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+.js .pillar-card.reveal:nth-child(2) {
+  transition-delay: 0.08s;
+}
+.js .pillar-card.reveal:nth-child(3) {
+  transition-delay: 0.12s;
+}
+.js .pillar-card.reveal:nth-child(4) {
+  transition-delay: 0.16s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .js .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .btn,
+  .contact-btn,
+  .float-wa {
+    transition: none;
+  }
+}
+
+/* ===== Quiz (overlay em tela cheia) ===== */
+.quiz {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--c-bg);
+  overflow-y: auto;
+}
+.quiz[hidden] {
+  display: none;
+}
+.quiz__panel {
+  width: min(100% - 2rem, 40rem);
+  margin: 0 auto;
+  padding: 1.1rem 0 3rem;
+}
+.quiz__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0 1.1rem;
+}
+.quiz__brand {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  color: var(--c-green-dark);
+  font-size: 1.05rem;
+  margin: 0;
+}
+.quiz__close {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: var(--c-ink);
+  width: 2.75rem;
+  height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.quiz__close:hover {
+  background: var(--c-bg-alt);
+}
+.quiz__close svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+.quiz__bar {
+  height: 0.45rem;
+  background: #e4e1d6;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.quiz__bar span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--c-green);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+.quiz__progress-text {
+  font-size: 0.8rem;
+  color: var(--c-muted);
+  margin: 0.5rem 0 0;
+}
+.quiz__body {
+  padding-top: 1.9rem;
+}
+.quiz-q {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+.quiz-q__text {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 1.45rem;
+  color: var(--c-ink);
+  line-height: 1.25;
+  margin-bottom: 1.5rem;
+  padding: 0;
+}
+.quiz-q__text:focus {
+  outline: none;
+}
+.quiz-q__options {
+  display: grid;
+  gap: 0.8rem;
+}
+.quiz-option {
+  text-align: left;
+  background: var(--c-white);
+  border: 1.5px solid #e0ddd2;
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  font: inherit;
+  font-size: 0.98rem;
+  color: var(--c-text);
+  cursor: pointer;
+  min-height: 3rem; /* alvo de toque ≥ 44px */
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.quiz-option:hover {
+  border-color: var(--c-green);
+  background: #f4f7f2;
+}
+.quiz__back {
+  margin-top: 1.6rem;
+  background: none;
+  border: 0;
+  color: var(--c-muted);
+  font: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+  padding: 0.55rem 0.4rem;
+  min-height: 2.75rem;
+}
+.quiz__back:hover {
+  color: var(--c-ink);
+}
+
+/* Passo final do quiz (consentimento + WhatsApp) */
+.quiz-final__badge {
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 50%;
+  background: var(--c-green);
+  color: var(--c-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 0 1.2rem;
+}
+.quiz-final__badge svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+.quiz-final__title {
+  font-size: 1.55rem;
+  margin-bottom: 0.7rem;
+}
+.quiz-final__title:focus {
+  outline: none;
+}
+.quiz-consent {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  font-size: 0.87rem;
+  margin: 1.3rem 0 1.4rem;
+  color: var(--c-text);
+  cursor: pointer;
+}
+.quiz-consent input {
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: 0.15rem;
+  accent-color: var(--c-green-dark);
+  flex: 0 0 auto;
+}
+.quiz-consent a {
+  color: var(--c-green-dark);
+}
+.quiz-final__error {
+  color: var(--c-red);
+  font-size: 0.87rem;
+  margin: 0 0 1rem;
+}
+
+/* Honeypot anti-spam: fora da tela, invisível também para leitores
+   (aria-hidden) e fora da ordem de tabulação (tabindex="-1") */
+.hp-field {
+  position: absolute;
+  left: -6000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
