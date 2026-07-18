@@ -17,9 +17,9 @@ export const CONFIG = {
   /* Vídeo do hero: YouTube Short embutido em fachada (só carrega ao clicar). */
   youtubeVideoId: "1Ta_MJS6rYQ",
 
-  /* ⚠️ PLACEHOLDER — URL da política de privacidade (obrigatória para o
-     consentimento LGPD do quiz). Enquanto vazia, o texto do consentimento
-     aparece sem link. */
+  /* Reservada para uso futuro (ex.: link no rodapé). O checkbox de
+     consentimento LGPD foi removido do quiz por decisão da cliente
+     (formulário idêntico ao print) — ver nota de compliance no README. */
   privacyPolicyUrl: "",
 
   /* Links reais do bloco "Fale conosco" (também estão no HTML como href
@@ -27,3 +27,9 @@ export const CONFIG = {
   instagramUrl: "https://www.instagram.com/metodoyuka/",
   youtubeUrl: "https://www.youtube.com/@metodoyuka",
 };
+
+/* TODO: cole aqui a URL real do webhook "Custom Webhook" criado no
+   cenário do Make.com (captura de leads — seção 11 do briefing).
+   Enquanto o placeholder estiver aqui, NENHUM envio é feito (o código
+   detecta o "[" inicial e pula em silêncio). Não usar URL inventada. */
+export const MAKE_WEBHOOK_URL = "[COLE_A_URL_DO_WEBHOOK_MAKE_AQUI]";

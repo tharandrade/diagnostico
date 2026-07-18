@@ -41,8 +41,8 @@ assets/img/favicon.svg
 | Número do WhatsApp (real: `5548996289329`) | `assets/js/config.js` + hrefs estáticos no `index.html` |
 | Mensagem dos botões de WhatsApp direto (⚠️ texto sugerido, confirmar com a cliente) | `whatsappDirectMessage` em `assets/js/config.js` |
 | Copy do quiz (4 etapas + confirmação — já é a copy aprovada dos prints) | `QUESTIONS`/`FORM_TEXT`/`CONFIRM_TEXT` em `assets/js/quiz-engine.js` |
-| IDs de GTM / Meta Pixel / GA4 | `assets/js/analytics.js` (e descomente os `preconnect` no `<head>`) |
-| URL da política de privacidade (LGPD) | `assets/js/config.js` |
+| IDs de GTM / GA4 (Pixel já instalado — só base) | `assets/js/analytics.js` (e descomente os `preconnect` no `<head>`) |
+| **URL do webhook do Make.com** (pendente) | constante `MAKE_WEBHOOK_URL` em `assets/js/config.js` |
 | Links de Instagram / YouTube (reais) | `assets/js/config.js` + hrefs estáticos no `index.html` |
 | ID do vídeo do hero (YouTube Short `1Ta_MJS6rYQ`) | `assets/js/config.js` (fachada em `ui.js`) |
 | Cores da marca | variáveis `:root` no `<style>` do `index.html` **e** em `critical.css` |
@@ -88,27 +88,55 @@ Modal sobre a página (overlay escuro): cabeçalho "Etapa X de 4" + X +
 "← Voltar" (a partir da etapa 2), barra de 4 segmentos cumulativos e o
 rótulo "GRÁTIS E SEM COMPROMISSO". Etapas 1–3 são escolha única com
 avanço automático (etapa 1 em grid 2x2); etapa 4 é o formulário
-(nome/WhatsApp/e-mail + consentimento LGPD + honeypot) com "ENVIAR →";
-a etapa 5 ("Diagnóstico recebido ✅", centralizada, sem cabeçalho) só
-abre o WhatsApp no clique de "RECEBER MINHA ANÁLISE →", com mensagem
-resumindo as 3 respostas + nome. **Não há pontuação/pilar calculado.**
+(nome/WhatsApp/e-mail + honeypot, **sem checkbox LGPD** — decisão da
+cliente, idêntico ao print) com "ENVIAR →"; a etapa 5 ("Diagnóstico
+recebido ✅", centralizada, sem cabeçalho) só abre o WhatsApp no clique
+de "RECEBER MINHA ANÁLISE →", com mensagem resumindo as 3 respostas +
+nome (e-mail/telefone não entram no texto — vão pro Make.com).
+**Não há pontuação/pilar calculado.**
 
-⚠️ Sem backend: o e-mail e o telefone digitados não são enviados a
-lugar nenhum — só o nome e as respostas entram na mensagem de WhatsApp
-(conforme o briefing). Se a cliente quiser guardar esses dados, é
-preciso ligar o formulário a um backend/planilha (ex.: webhook) ou
-incluí-los na mensagem.
+## Captura de leads (Make.com)
 
-## Eventos de tracking
+No submit válido da etapa 4, o site envia um POST **best-effort** para
+o webhook do Make.com com o lead completo: `nome`, `whatsapp`, `email`,
+`respostas` (`funcionarios` / `maior_desafio` / `demanda`),
+`utm_source` / `utm_medium` / `utm_campaign`, `pagina_origem` e
+`timestamp` (ISO). O envio roda **em paralelo** com a transição para a
+etapa 5 — não espera resposta e falha de rede é só logada no console,
+nunca mostrada ao usuário.
 
-Disparados via `dataLayer` (GA4/GTM): `quiz_start` (abertura),
-`quiz_step_completed` (`step` 1–4), `lead_submitted` (submit válido da
-etapa 4), `quiz_completed` (exibição da etapa 5), `cta_whatsapp_click`
-(com `origin`; no quiz, dispara no clique de "RECEBER MINHA ANÁLISE →"
-— evento separado do lead, momentos diferentes). Meta Pixel: `PageView`,
-`Lead` (submit da etapa 4), `CompleteRegistration` (etapa 5 exibida).
-Com os IDs vazios nada é carregado — os scripts de terceiros só entram
-**depois** do `load`, em `requestIdleCallback`.
+- **URL**: cole a URL real do "Custom Webhook" na constante
+  `MAKE_WEBHOOK_URL` em `assets/js/config.js`. Enquanto o placeholder
+  `[COLE_A_URL_DO_WEBHOOK_MAKE_AQUI]` estiver lá, nenhum envio é feito.
+- **CORS**: tenta primeiro `cors` + `application/json`; se o navegador
+  bloquear, refaz automaticamente com `no-cors` + `text/plain` (sem
+  preflight — o Make ainda parseia o corpo; a resposta não é lida).
+
+⚠️ **Nota de compliance (registrada uma vez, decisão da cliente):** o
+checkbox de consentimento LGPD foi removido a pedido da cliente
+(formulário idêntico ao print). Como agora o Make.com passa a
+armazenar/processar nome, e-mail e WhatsApp de verdade, vale revisitar
+o tema com quem cuida do jurídico — não é exigência técnica, só um
+contexto que mudou.
+
+## Tracking — estado atual (por instrução da cliente)
+
+- **Meta Pixel**: instalado **só o código base** (ID `1617277909405709`),
+  que dispara o `PageView` automático. Eventos custom (`Lead`,
+  `CompleteRegistration`...) estão **desligados** pela flag
+  `PIXEL_CUSTOM_EVENTS` em `analytics.js` — mudar para `true` quando a
+  próxima etapa de tracking for liberada.
+- **GTM / GA4**: ainda sem IDs. Os pushes de `dataLayer` (`quiz_start`,
+  `quiz_step_completed` com `step` 1–4, `lead_submitted`,
+  `quiz_completed`, `cta_whatsapp_click`) já existem no código, mas são
+  inertes até o GTM ser instalado.
+- Scripts de terceiros só carregam **depois** do `load`, em
+  `requestIdleCallback` — nunca competem com o LCP.
+
+🔒 **Segurança**: o access token do Graph API (Conversions API) que veio
+com o Pixel **não entra neste repositório** — é credencial server-side;
+num site estático ficaria exposta no código-fonte. Conversions API
+exige function/servidor com o token em variável de ambiente.
 
 UTMs (`utm_*`, `gclid`, `fbclid`) são capturados na chegada, guardados em
 `sessionStorage` e anexados à mensagem de WhatsApp (`ref: fonte / campanha`)
@@ -161,7 +189,7 @@ Verificado no código:
 - [x] Nenhum script de terceiros no caminho do LCP (GTM/Pixel/GA4 só após `load` + idle)
 - [x] Mídia dentro de caixas com `aspect-ratio` fixo + `object-fit: cover` → CLS ~0, inclusive na troca capa→iframe
 - [x] Acessibilidade: contraste AA na paleta, `aria-live` no progresso do quiz, navegação por teclado + focus trap + Esc no modal, foco visível customizado, `aria-label` nos botões de ícone, alvos de toque ≥ 44px, `prefers-reduced-motion` respeitado
-- [x] LGPD: checkbox de consentimento antes de abrir o WhatsApp + honeypot anti-spam acessível
+- [x] Honeypot anti-spam acessível no formulário (checkbox LGPD removido por decisão da cliente — ver nota de compliance)
 - [x] Todos os CTAs terminam com "→"; copy 100% igual à aprovada
 
 Validar após o deploy (depende de ambiente real):
@@ -171,18 +199,18 @@ Validar após o deploy (depende de ambiente real):
 
 ## Pendências (não publicar sem resolver)
 
-1. Grafia da faixa do vídeo ("DIAGNÓSTICO MY ESSENCIAL"?)
-2. URL da política de privacidade (LGPD) — o checkbox de consentimento
-   da etapa 4 existe por exigência do briefing (seção 11), embora não
-   apareça no print; sem a URL, o texto fica sem link
-3. IDs de GTM / Meta Pixel / GA4
+1. **URL do webhook do Make.com** — trocar o placeholder
+   `MAKE_WEBHOOK_URL` em `config.js` (sem ela, os leads da etapa 4 não
+   são guardados em lugar nenhum)
+2. Grafia da faixa do vídeo ("DIAGNÓSTICO MY ESSENCIAL"?)
+3. IDs de GTM / GA4 (e liberar os eventos custom do Pixel quando chegar
+   a etapa de tracking — flag `PIXEL_CUSTOM_EVENTS`)
 4. Confirmar textos funcionais não aprovados: mensagem dos botões de
    WhatsApp direto (`whatsappDirectMessage` em `config.js`) e a mensagem
    final montada com o resumo das respostas (`scoring.js`)
-5. Decidir destino do e-mail/telefone coletados (ver aviso na seção
-   "Fluxo do quiz" — hoje não são transmitidos)
-6. Paleta/logos oficiais da marca, se existirem (trocar só as variáveis CSS)
+5. Paleta/logos oficiais da marca, se existirem (trocar só as variáveis CSS)
 
 Resolvidos: copy completa do quiz (4 etapas + confirmação), número de
 WhatsApp (`5548996289329`), Instagram/YouTube, vídeo do hero (Short em
-fachada) e foto da Thabata.
+fachada), foto da Thabata, Meta Pixel base (`1617277909405709`) e a
+decisão sobre o checkbox LGPD (removido — ver nota de compliance).

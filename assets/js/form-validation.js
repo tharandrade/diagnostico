@@ -4,7 +4,8 @@
      falha em silêncio (sem mensagem de erro).
    - Nome / WhatsApp / e-mail obrigatórios (validação leve,
      sem bloquear formatos legítimos).
-   - Consentimento LGPD obrigatório.
+   (Sem checkbox LGPD — decisão da cliente: formulário idêntico
+   ao print. Nota de compliance no README.)
    ========================================================= */
 
 export function validateContactForm(form) {
@@ -16,7 +17,6 @@ export function validateContactForm(form) {
   const nome = form.querySelector("#lead-nome");
   const whatsapp = form.querySelector("#lead-whatsapp");
   const email = form.querySelector("#lead-email");
-  const consent = form.querySelector("#quiz-consent");
 
   [nome, whatsapp, email].forEach((el) => el.removeAttribute("aria-invalid"));
 
@@ -31,13 +31,6 @@ export function validateContactForm(form) {
 
   if (!/^\S+@\S+\.\S+$/.test(email.value.trim())) {
     return invalid(email, "Informe um e-mail válido.");
-  }
-
-  if (!consent || !consent.checked) {
-    return {
-      ok: false,
-      message: "Para enviar, marque a caixa de consentimento.",
-    };
   }
 
   return { ok: true };

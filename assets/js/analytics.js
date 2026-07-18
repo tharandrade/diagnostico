@@ -8,21 +8,36 @@
    Performance: os scripts só carregam DEPOIS do evento load,
    em requestIdleCallback — nunca competem com o LCP.
 
-   Eventos disparados pelo site (GA4/GTM via dataLayer):
+   Eventos disparados pelo site (GA4/GTM via dataLayer — inertes
+   até o GTM ser instalado):
      quiz_start            { origin }
-     quiz_step_completed   { step, pilar }
+     quiz_step_completed   { step }
      quiz_completed        {}
-     lead_submitted        { pilar }
-     cta_whatsapp_click    { origin, pilar? }
-   Meta Pixel: PageView (no init), CompleteRegistration
-   (tela final do quiz), Lead (envio do consentimento).
+     lead_submitted        {}
+     cta_whatsapp_click    { origin }
+   Meta Pixel: só a instalação base (PageView automático) nesta
+   etapa — eventos custom atrás da flag PIXEL_CUSTOM_EVENTS.
    ========================================================= */
 
 export const ANALYTICS_IDS = {
-  GTM_ID: "", // ex.: "GTM-XXXXXXX"
-  META_PIXEL_ID: "", // ex.: "123456789012345"
-  GA4_ID: "", // ex.: "G-XXXXXXXXXX" — desnecessário se o GA4 já estiver dentro do GTM
+  GTM_ID: "", // pendente — ex.: "GTM-XXXXXXX"
+  META_PIXEL_ID: "1617277909405709", // instalação BASE autorizada (PageView automático)
+  GA4_ID: "", // pendente — desnecessário se o GA4 já estiver dentro do GTM
 };
+
+/* ⚠️ SEGURANÇA: o access token do Graph API que veio junto com o Pixel
+   NÃO entra neste projeto. Token é credencial server-side (Conversions
+   API); num site estático ele ficaria visível para qualquer visitante
+   no código-fonte. Conversions API exige um servidor/function guardando
+   o token como variável de ambiente.
+
+   Etapa atual do tracking (instrução explícita da cliente):
+   - Meta Pixel: SÓ o código base (PageView automático). Eventos custom
+     (Lead, CompleteRegistration...) ficam DESLIGADOS pela flag abaixo —
+     quando a próxima etapa for liberada, basta mudar para true.
+   - GTM/GA4: ainda sem ID; os pushes de dataLayer abaixo já existem mas
+     são inertes até o GTM ser instalado (etapa futura). */
+const PIXEL_CUSTOM_EVENTS = false;
 
 const UTM_KEYS = [
   "utm_source",
@@ -51,8 +66,10 @@ export function track(event, params = {}) {
   window.dataLayer.push({ event, ...params });
 }
 
-/** Evento do Meta Pixel (no-op se o Pixel não estiver configurado). */
+/** Evento custom do Meta Pixel — no-op enquanto PIXEL_CUSTOM_EVENTS
+    for false (só a instalação base está autorizada nesta etapa). */
 export function pixelTrack(eventName, params = {}) {
+  if (!PIXEL_CUSTOM_EVENTS) return;
   if (typeof window.fbq === "function") window.fbq("track", eventName, params);
 }
 

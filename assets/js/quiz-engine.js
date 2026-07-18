@@ -4,24 +4,30 @@
 
    Fluxo:
      Etapas 1–3: escolha única, avança automático ao clicar.
-     Etapa 4:    formulário de contato (nome/WhatsApp/e-mail)
-                 + consentimento LGPD + honeypot → "ENVIAR →".
+     Etapa 4:    formulário nome/WhatsApp/e-mail + honeypot
+                 (SEM checkbox LGPD — decisão da cliente, idêntico
+                 ao print). No submit válido: envio best-effort do
+                 lead completo ao webhook do Make.com, em paralelo
+                 com a transição para a etapa 5 (não espera nem
+                 mostra erro).
      Etapa 5:    confirmação centralizada, sem cabeçalho/barra;
                  só o botão "RECEBER MINHA ANÁLISE →" abre o
-                 WhatsApp (mensagem = resumo das respostas + nome).
+                 WhatsApp (resumo das respostas + nome — e-mail e
+                 telefone vão só pro Make.com, não pro texto).
 
    Não existe pontuação/pilar calculado — a análise é feita
    pela equipe na conversa, não pelo site.
 
-   Eventos (analytics.js):
+   Eventos (analytics.js — dataLayer inerte até o GTM entrar;
+   eventos custom do Pixel desligados por flag nesta etapa):
      quiz_start            ao abrir o modal
      quiz_step_completed   etapas 1–3 no clique, etapa 4 no submit
-     lead_submitted        submit válido da etapa 4 (+ Pixel Lead)
-     quiz_completed        ao exibir a etapa 5 (+ Pixel CompleteRegistration)
+     lead_submitted        submit válido da etapa 4
+     quiz_completed        ao exibir a etapa 5
      cta_whatsapp_click    clique em "RECEBER MINHA ANÁLISE →"
    ========================================================= */
 
-import { CONFIG } from "./config.js";
+import { CONFIG, MAKE_WEBHOOK_URL } from "./config.js";
 import { buildWhatsAppMessage, buildWhatsAppUrl } from "./scoring.js";
 import {
   validateContactForm,
@@ -32,7 +38,8 @@ import { track, pixelTrack, getStoredUtms } from "./analytics.js";
 import { trapFocus } from "./ui.js";
 
 /* Copy aprovada das 3 perguntas (prints reais).
-   "rotulo" é usado no resumo da mensagem de WhatsApp. */
+   "rotulo" é usado no resumo da mensagem de WhatsApp;
+   "campo" é o nome do campo no payload do webhook do Make.com. */
 const QUESTIONS = [
   {
     id: "q1",
@@ -40,6 +47,7 @@ const QUESTIONS = [
     pergunta: "Quantos funcionários tem sua marcenaria?",
     subtitulo: "Isso ajuda a entender o tamanho da sua operação.",
     rotulo: "Funcionários",
+    campo: "funcionarios",
     opcoes: ["Só eu", "1 a 3", "4 a 10", "Mais de 10"],
   },
   {
@@ -48,6 +56,7 @@ const QUESTIONS = [
     pergunta: "Qual é o maior desafio hoje?",
     subtitulo: "Escolha a opção que mais representa seu momento.",
     rotulo: "Maior desafio",
+    campo: "maior_desafio",
     opcoes: [
       "Vendo, mas o dinheiro não sobra",
       "Não sei se meus projetos dão lucro",
@@ -63,6 +72,7 @@ const QUESTIONS = [
     pergunta: "Hoje você já tem projetos entrando todos os meses?",
     subtitulo: "Como está sua demanda atualmente?",
     rotulo: "Demanda",
+    campo: "demanda",
     opcoes: [
       "Sim, tenho demanda recorrente",
       "Varia bastante",
@@ -94,15 +104,6 @@ const CONFIRM_TEXT = {
   p1: "Agora vou analisar suas respostas para identificar possíveis falhas de precificação, gargalos de produção e oportunidades de aumento de lucro na sua marcenaria.",
   p2: "Clique no botão abaixo para receber sua análise pelo WhatsApp.",
   botao: "RECEBER MINHA ANÁLISE",
-};
-
-/* Consentimento LGPD (exigência da seção 11 do briefing — não aparece
-   no print, remover só se a cliente pedir explicitamente). */
-const CONSENT_TEXT = {
-  prefix: "Li e concordo com a ",
-  link: "Política de Privacidade",
-  suffix:
-    " e autorizo o uso dos meus dados para contato sobre o diagnóstico.",
 };
 
 /* Estado: 0–2 = perguntas, 3 = formulário, 4 = confirmação */
@@ -222,7 +223,7 @@ function renderQuestion(index) {
 
 function selectOption(texto) {
   const q = QUESTIONS[current];
-  answers[current] = { rotulo: q.rotulo, resposta: texto };
+  answers[current] = { campo: q.campo, rotulo: q.rotulo, resposta: texto };
   track("quiz_step_completed", { step: current + 1 });
   if (current + 1 < QUESTIONS.length) renderQuestion(current + 1);
   else renderForm();
@@ -232,14 +233,6 @@ function renderForm() {
   current = 3;
   setHeader(4);
   els.body.textContent = "";
-
-  const consentLinkHtml = CONFIG.privacyPolicyUrl
-    ? '<a href="' +
-      CONFIG.privacyPolicyUrl +
-      '" target="_blank" rel="noopener noreferrer">' +
-      CONSENT_TEXT.link +
-      "</a>"
-    : CONSENT_TEXT.link;
 
   const form = document.createElement("form");
   form.className = "quiz-form";
@@ -278,14 +271,6 @@ function renderForm() {
     '<div class="hp-field" aria-hidden="true">' +
     '<label>Não preencha este campo<input type="text" name="website" tabindex="-1" autocomplete="off"></label>' +
     "</div>" +
-    '<label class="quiz-consent">' +
-    '<input type="checkbox" id="quiz-consent" name="consent">' +
-    "<span>" +
-    CONSENT_TEXT.prefix +
-    consentLinkHtml +
-    CONSENT_TEXT.suffix +
-    "</span>" +
-    "</label>" +
     '<p class="quiz-error" role="alert" hidden></p>' +
     '<button type="submit" class="btn">' +
     FORM_TEXT.botao +
@@ -303,11 +288,17 @@ function renderForm() {
       return;
     }
     leadNome = form.querySelector("#lead-nome").value.trim();
-    /* Lead capturado: dois eventos AGORA; o clique de WhatsApp é outro
-       momento (etapa 5) e outra métrica — não disparar juntos. */
+    /* Lead capturado: webhook + eventos AGORA, em paralelo com a etapa 5
+       (sem esperar resposta). O clique de WhatsApp é outro momento
+       (etapa 5) e outra métrica — não disparar juntos. */
+    sendLeadToMake({
+      nome: leadNome,
+      whatsapp: form.querySelector("#lead-whatsapp").value.trim(),
+      email: form.querySelector("#lead-email").value.trim(),
+    });
     track("quiz_step_completed", { step: 4 });
     track("lead_submitted");
-    pixelTrack("Lead");
+    pixelTrack("Lead"); /* no-op nesta etapa (flag em analytics.js) */
     renderConfirmation();
   });
 
@@ -315,11 +306,60 @@ function renderForm() {
   focusTitle(form.querySelector("h3"));
 }
 
+/**
+ * Envio best-effort do lead completo para o Make.com (seção 11 do
+ * briefing) — é onde os dados passam a ser guardados de verdade, já que
+ * o site não tem backend. Nunca bloqueia nem atrasa a etapa 5; falha de
+ * rede é só logada no console (sem erro para o usuário).
+ *
+ * CORS: tenta primeiro `cors` + `application/json` (webhooks do Make
+ * normalmente aceitam). Se o navegador bloquear, refaz com `no-cors` +
+ * `text/plain` — evita o preflight; o Make ainda parseia o corpo como
+ * JSON, só não dá para ler a resposta (não precisamos ler).
+ */
+function sendLeadToMake(contato) {
+  /* placeholder "[COLE_A_URL...]" = cenário do Make ainda não criado */
+  if (!MAKE_WEBHOOK_URL || MAKE_WEBHOOK_URL.startsWith("[")) return;
+
+  const utms = getStoredUtms();
+  const respostas = {};
+  answers.forEach((a) => {
+    respostas[a.campo] = a.resposta;
+  });
+  const body = JSON.stringify({
+    nome: contato.nome,
+    whatsapp: contato.whatsapp,
+    email: contato.email,
+    respostas,
+    utm_source: utms.utm_source || null,
+    utm_medium: utms.utm_medium || null,
+    utm_campaign: utms.utm_campaign || null,
+    pagina_origem: window.location.href,
+    timestamp: new Date().toISOString(),
+  });
+
+  fetch(MAKE_WEBHOOK_URL, {
+    method: "POST",
+    mode: "cors",
+    headers: { "Content-Type": "application/json" },
+    body,
+    keepalive: true, /* sobrevive se a pessoa navegar logo em seguida */
+  }).catch(() =>
+    fetch(MAKE_WEBHOOK_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain" },
+      body,
+      keepalive: true,
+    }).catch((err) => console.warn("Falha ao enviar lead pro Make.com:", err))
+  );
+}
+
 function renderConfirmation() {
   current = 4;
   hideHeader();
   track("quiz_completed");
-  pixelTrack("CompleteRegistration");
+  pixelTrack("CompleteRegistration"); /* no-op nesta etapa (flag em analytics.js) */
   els.body.textContent = "";
 
   const box = document.createElement("div");
