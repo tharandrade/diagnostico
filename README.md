@@ -25,10 +25,10 @@ index.html                  página inteira (CSS crítico inline no <head>)
 assets/css/critical.css     FONTE do CSS crítico (ver "CSS crítico" abaixo)
 assets/css/main.css         CSS não crítico (carrega sem bloquear render)
 assets/js/config.js         ⚙️ número do WhatsApp, links, política de privacidade
-assets/js/quiz-engine.js    perguntas (PLACEHOLDER) + navegação do quiz
-assets/js/scoring.js        cálculo do pilar mais fraco + mensagem de WhatsApp
-assets/js/ui.js             reveal on scroll, barra fixa mobile, focus trap
-assets/js/form-validation.js consentimento LGPD + honeypot
+assets/js/quiz-engine.js    modal do quiz: 3 perguntas + formulário + confirmação
+assets/js/scoring.js        monta a mensagem de WhatsApp (resumo das respostas + nome)
+assets/js/ui.js             reveal on scroll, barra fixa mobile, fachada do vídeo, focus trap
+assets/js/form-validation.js valida nome/WhatsApp/e-mail + consentimento LGPD + honeypot
 assets/js/analytics.js      slots de GTM/Pixel/GA4 + eventos + captura de UTM
 assets/fonts/               Playfair Display 700 + Inter variável (WOFF2, self-hosted)
 assets/img/favicon.svg
@@ -40,7 +40,7 @@ assets/img/favicon.svg
 | --- | --- |
 | Número do WhatsApp (real: `5548996289329`) | `assets/js/config.js` + hrefs estáticos no `index.html` |
 | Mensagem dos botões de WhatsApp direto (⚠️ texto sugerido, confirmar com a cliente) | `whatsappDirectMessage` em `assets/js/config.js` |
-| **Perguntas do quiz** (hoje `[A CONFIRMAR]` — **não publicar assim**) | array `QUESTIONS` em `assets/js/quiz-engine.js` |
+| Copy do quiz (4 etapas + confirmação — já é a copy aprovada dos prints) | `QUESTIONS`/`FORM_TEXT`/`CONFIRM_TEXT` em `assets/js/quiz-engine.js` |
 | IDs de GTM / Meta Pixel / GA4 | `assets/js/analytics.js` (e descomente os `preconnect` no `<head>`) |
 | URL da política de privacidade (LGPD) | `assets/js/config.js` |
 | Links de Instagram / YouTube (reais) | `assets/js/config.js` + hrefs estáticos no `index.html` |
@@ -82,14 +82,33 @@ arquivo, copie o conteúdo para o `<style>` trocando os caminhos
 `../fonts/` por `assets/fonts/`. O restante do CSS (`main.css`) carrega
 com o truque `media="print" onload` e não bloqueia o render.
 
+## Fluxo do quiz (confirmado por prints)
+
+Modal sobre a página (overlay escuro): cabeçalho "Etapa X de 4" + X +
+"← Voltar" (a partir da etapa 2), barra de 4 segmentos cumulativos e o
+rótulo "GRÁTIS E SEM COMPROMISSO". Etapas 1–3 são escolha única com
+avanço automático (etapa 1 em grid 2x2); etapa 4 é o formulário
+(nome/WhatsApp/e-mail + consentimento LGPD + honeypot) com "ENVIAR →";
+a etapa 5 ("Diagnóstico recebido ✅", centralizada, sem cabeçalho) só
+abre o WhatsApp no clique de "RECEBER MINHA ANÁLISE →", com mensagem
+resumindo as 3 respostas + nome. **Não há pontuação/pilar calculado.**
+
+⚠️ Sem backend: o e-mail e o telefone digitados não são enviados a
+lugar nenhum — só o nome e as respostas entram na mensagem de WhatsApp
+(conforme o briefing). Se a cliente quiser guardar esses dados, é
+preciso ligar o formulário a um backend/planilha (ex.: webhook) ou
+incluí-los na mensagem.
+
 ## Eventos de tracking
 
-Disparados via `dataLayer` (GA4/GTM): `quiz_start`, `quiz_step_completed`
-(com `step`), `quiz_completed`, `lead_submitted` (com `pilar`),
-`cta_whatsapp_click` (com `origin`). Meta Pixel: `PageView`,
-`CompleteRegistration` (tela final do quiz), `Lead` (envio do
-consentimento). Com os IDs vazios nada é carregado — os scripts de
-terceiros só entram **depois** do `load`, em `requestIdleCallback`.
+Disparados via `dataLayer` (GA4/GTM): `quiz_start` (abertura),
+`quiz_step_completed` (`step` 1–4), `lead_submitted` (submit válido da
+etapa 4), `quiz_completed` (exibição da etapa 5), `cta_whatsapp_click`
+(com `origin`; no quiz, dispara no clique de "RECEBER MINHA ANÁLISE →"
+— evento separado do lead, momentos diferentes). Meta Pixel: `PageView`,
+`Lead` (submit da etapa 4), `CompleteRegistration` (etapa 5 exibida).
+Com os IDs vazios nada é carregado — os scripts de terceiros só entram
+**depois** do `load`, em `requestIdleCallback`.
 
 UTMs (`utm_*`, `gclid`, `fbclid`) são capturados na chegada, guardados em
 `sessionStorage` e anexados à mensagem de WhatsApp (`ref: fonte / campanha`)
@@ -152,13 +171,18 @@ Validar após o deploy (depende de ambiente real):
 
 ## Pendências (não publicar sem resolver)
 
-1. **Perguntas reais do quiz** — hoje são placeholders `[A CONFIRMAR]`
-2. Grafia da faixa do vídeo ("DIAGNÓSTICO MY ESSENCIAL"?)
-3. URL da política de privacidade (LGPD)
-4. IDs de GTM / Meta Pixel / GA4
-5. Confirmar com a cliente o texto pré-preenchido dos botões de WhatsApp
-   direto (`whatsappDirectMessage` em `config.js` — é sugestão, não copy aprovada)
+1. Grafia da faixa do vídeo ("DIAGNÓSTICO MY ESSENCIAL"?)
+2. URL da política de privacidade (LGPD) — o checkbox de consentimento
+   da etapa 4 existe por exigência do briefing (seção 11), embora não
+   apareça no print; sem a URL, o texto fica sem link
+3. IDs de GTM / Meta Pixel / GA4
+4. Confirmar textos funcionais não aprovados: mensagem dos botões de
+   WhatsApp direto (`whatsappDirectMessage` em `config.js`) e a mensagem
+   final montada com o resumo das respostas (`scoring.js`)
+5. Decidir destino do e-mail/telefone coletados (ver aviso na seção
+   "Fluxo do quiz" — hoje não são transmitidos)
 6. Paleta/logos oficiais da marca, se existirem (trocar só as variáveis CSS)
 
-Resolvidos: número de WhatsApp (`5548996289329`), Instagram/YouTube,
-vídeo do hero (Short em fachada) e foto da Thabata.
+Resolvidos: copy completa do quiz (4 etapas + confirmação), número de
+WhatsApp (`5548996289329`), Instagram/YouTube, vídeo do hero (Short em
+fachada) e foto da Thabata.

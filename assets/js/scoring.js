@@ -1,58 +1,34 @@
 /* =========================================================
-   scoring.js — Cálculo do diagnóstico.
-   Regra: cada resposta soma pontos ao pilar da pergunta.
-   Pontuação BAIXA = situação pior. O pilar com a MENOR
-   média é o "maior gargalo" citado na mensagem de WhatsApp.
+   scoring.js — Montagem da mensagem de WhatsApp.
+
+   ⚠️ Não existe mais pontuação/pilar calculado: o quiz real
+   (prints confirmados) não revela resultado na tela. A
+   "análise" acontece na conversa — este módulo só resume as
+   3 respostas + nome do lead na mensagem pré-preenchida.
+
+   O texto-base da mensagem é funcional (não é copy aprovada);
+   confirmar com a cliente se quiser ajustar o tom.
    ========================================================= */
 
-export const PILLAR_LABELS = {
-  comercial: "Comercial",
-  producao: "Produção",
-  montagem: "Montagem",
-  financeiro: "Administrativo e Financeiro",
-};
-
 /**
- * @param {Array<{pilar: string, pontos: number}>} answers
- * @returns {Object} média de pontos por pilar, ex.: { comercial: 1.5, ... }
+ * Mensagem aberta ao clicar em "RECEBER MINHA ANÁLISE →".
+ * @param {{nome: string, respostas: Array<{rotulo: string, resposta: string}>}} lead
+ * @param {Object} utms — UTMs capturados na chegada (atribuição de campanha)
  */
-export function computeScores(answers) {
-  const sum = {};
-  const count = {};
-  answers.forEach(({ pilar, pontos }) => {
-    sum[pilar] = (sum[pilar] || 0) + pontos;
-    count[pilar] = (count[pilar] || 0) + 1;
+export function buildWhatsAppMessage(lead, utms = {}) {
+  const linhas = [
+    "Olá! Sou " +
+      lead.nome +
+      " e acabei de concluir o diagnóstico do Método Yuka.",
+    "",
+    "Minhas respostas:",
+  ];
+  lead.respostas.forEach(({ rotulo, resposta }) => {
+    linhas.push("• " + rotulo + ": " + resposta);
   });
-  const avg = {};
-  Object.keys(sum).forEach((p) => {
-    avg[p] = sum[p] / count[p];
-  });
-  return avg;
-}
-
-/** Pilar com a menor média (primeiro em caso de empate). */
-export function weakestPillar(scores) {
-  let weakest = null;
-  Object.entries(scores).forEach(([pilar, valor]) => {
-    if (weakest === null || valor < scores[weakest]) weakest = pilar;
-  });
-  return weakest;
-}
-
-/**
- * Mensagem pré-preenchida do WhatsApp ao concluir o quiz.
- * UTMs (quando existem) entram como sufixo curto para permitir
- * atribuição de campanha na conversa.
- */
-export function buildWhatsAppMessage(pillarKey, utms = {}) {
-  const label = PILLAR_LABELS[pillarKey] || "minha operação";
-  let msg =
-    "Olá! Fiz o diagnóstico do Método Yuka e meu maior gargalo parece estar em " +
-    label +
-    ".";
   const ref = [utms.utm_source, utms.utm_campaign].filter(Boolean).join(" / ");
-  if (ref) msg += "\n\nref: " + ref;
-  return msg;
+  if (ref) linhas.push("", "ref: " + ref);
+  return linhas.join("\n");
 }
 
 export function buildWhatsAppUrl(number, message) {

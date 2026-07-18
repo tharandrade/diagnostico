@@ -260,39 +260,59 @@
   }
   .btn,
   .contact-btn,
-  .float-wa {
+  .float-wa,
+  .media-frame__play {
     transition: none;
   }
 }
 
-/* ===== Quiz (overlay em tela cheia) ===== */
+/* =========================================================
+   Quiz — modal de 4 etapas + confirmação (prints reais)
+   ========================================================= */
 .quiz {
   position: fixed;
   inset: 0;
   z-index: 100;
-  background: var(--c-bg);
+  background: rgba(23, 26, 22, 0.55); /* overlay escurece a página */
+  display: flex;
+  padding: 1rem;
   overflow-y: auto;
 }
 .quiz[hidden] {
   display: none;
 }
-.quiz__panel {
-  width: min(100% - 2rem, 40rem);
-  margin: 0 auto;
-  padding: 1.1rem 0 3rem;
+.quiz__card {
+  background: var(--c-white);
+  width: min(100%, 34rem);
+  margin: auto; /* centraliza e permite rolar quando maior que a tela */
+  border-radius: 14px;
+  padding: 1.1rem 1.5rem 1.9rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
 }
-.quiz__header {
+@media (min-width: 40rem) {
+  .quiz__card {
+    padding: 1.3rem 2rem 2.2rem;
+  }
+}
+
+/* Cabeçalho: "Etapa X de 4" à esquerda; X e "← Voltar" à direita */
+.quiz__top {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 0.4rem 0 1.1rem;
+  align-items: flex-start;
+  gap: 1rem;
+  min-height: 3.4rem;
 }
-.quiz__brand {
-  font-family: var(--font-serif);
-  font-weight: 700;
+.quiz__step-label {
+  font-size: 0.85rem;
   color: var(--c-green-dark);
-  font-size: 1.05rem;
   margin: 0;
+  padding-top: 0.65rem;
+}
+.quiz__top-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
 }
 .quiz__close {
   background: none;
@@ -305,36 +325,50 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
+  margin-right: -0.6rem;
 }
 .quiz__close:hover {
   background: var(--c-bg-alt);
 }
-.quiz__close svg {
-  width: 1.05rem;
-  height: 1.05rem;
+.quiz__back {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: var(--c-body);
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.35rem 0.4rem;
 }
-.quiz__bar {
-  height: 0.45rem;
+.quiz__back:hover {
+  color: var(--c-ink);
+}
+
+/* Barra de progresso: 4 segmentos, preenchimento cumulativo */
+.quiz__segments {
+  display: flex;
+  gap: 0.45rem;
+}
+.quiz__segments span {
+  flex: 1;
+  height: 0.4rem;
+  border-radius: 999px;
   background: #e4e1d6;
-  border-radius: 999px;
-  overflow: hidden;
 }
-.quiz__bar span {
-  display: block;
-  height: 100%;
-  width: 0;
-  background: var(--c-green);
-  border-radius: 999px;
-  transition: width 0.3s ease;
+.quiz__segments span.is-done {
+  background: var(--c-green-dark);
 }
-.quiz__progress-text {
-  font-size: 0.8rem;
+.quiz__free {
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--c-muted);
-  margin: 0.5rem 0 0;
+  margin: 0.8rem 0 0;
 }
 .quiz__body {
-  padding-top: 1.9rem;
+  padding-top: 1.5rem;
 }
+
+/* Perguntas (etapas 1–3) — alinhadas à esquerda */
 .quiz-q {
   border: 0;
   margin: 0;
@@ -343,18 +377,25 @@
 .quiz-q__text {
   font-family: var(--font-serif);
   font-weight: 700;
-  font-size: 1.45rem;
+  font-size: 1.5rem;
   color: var(--c-ink);
-  line-height: 1.25;
-  margin-bottom: 1.5rem;
+  line-height: 1.22;
+  margin: 0 0 0.6rem;
   padding: 0;
 }
 .quiz-q__text:focus {
   outline: none;
 }
-.quiz-q__options {
+.quiz-q__sub {
+  color: var(--c-body);
+  margin: 0 0 1.4rem;
+}
+.quiz-options {
   display: grid;
   gap: 0.8rem;
+}
+.quiz-options--grid {
+  grid-template-columns: 1fr 1fr; /* etapa 1: 2x2 como no print */
 }
 .quiz-option {
   text-align: left;
@@ -366,57 +407,57 @@
   font-size: 0.98rem;
   color: var(--c-text);
   cursor: pointer;
-  min-height: 3rem; /* alvo de toque ≥ 44px */
+  min-height: 3.4rem; /* alvo de toque ≥ 44px */
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 .quiz-option:hover {
   border-color: var(--c-green);
   background: #f4f7f2;
 }
-.quiz__back {
-  margin-top: 1.6rem;
-  background: none;
-  border: 0;
-  color: var(--c-muted);
-  font: inherit;
-  font-size: 0.88rem;
-  cursor: pointer;
-  padding: 0.55rem 0.4rem;
-  min-height: 2.75rem;
-}
-.quiz__back:hover {
-  color: var(--c-ink);
-}
 
-/* Passo final do quiz (consentimento + WhatsApp) */
-.quiz-final__badge {
-  width: 3.4rem;
-  height: 3.4rem;
-  border-radius: 50%;
-  background: var(--c-green);
-  color: var(--c-white);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 0 1.2rem;
+/* Formulário (etapa 4) */
+.quiz-form__field {
+  margin-bottom: 1.1rem;
 }
-.quiz-final__badge svg {
-  width: 1.5rem;
-  height: 1.5rem;
+.quiz-form__field label {
+  display: block;
+  color: var(--c-ink);
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.45rem;
 }
-.quiz-final__title {
-  font-size: 1.55rem;
-  margin-bottom: 0.7rem;
+.quiz-form__field input {
+  width: 100%;
+  border: 1.5px solid #e0ddd2;
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  font: inherit;
+  font-size: 0.98rem;
+  color: var(--c-ink);
+  background: var(--c-white);
+  min-height: 3rem;
 }
-.quiz-final__title:focus {
-  outline: none;
+.quiz-form__field input::placeholder {
+  color: #a9ada3;
+}
+.quiz-form__field input[aria-invalid="true"] {
+  border-color: var(--c-red);
+}
+.quiz-form .btn {
+  width: 100%;
+}
+.quiz-form__micro {
+  font-size: 0.78rem;
+  color: var(--c-muted);
+  text-align: center;
+  margin: 0.85rem 0 0;
 }
 .quiz-consent {
   display: flex;
   gap: 0.6rem;
   align-items: flex-start;
   font-size: 0.87rem;
-  margin: 1.3rem 0 1.4rem;
+  margin: 0.4rem 0 1.3rem;
   color: var(--c-text);
   cursor: pointer;
 }
@@ -430,10 +471,41 @@
 .quiz-consent a {
   color: var(--c-green-dark);
 }
-.quiz-final__error {
+.quiz-error {
   color: var(--c-red);
   font-size: 0.87rem;
   margin: 0 0 1rem;
+}
+
+/* Confirmação (etapa 5) — única tela centralizada do fluxo */
+.quiz-confirm {
+  text-align: center;
+  padding: 0.4rem 0 0.3rem;
+}
+.quiz-confirm__title {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 1.7rem;
+  color: var(--c-ink);
+  margin: 0 0 1rem;
+}
+.quiz-confirm__title:focus {
+  outline: none;
+}
+.quiz-confirm p {
+  color: var(--c-body);
+}
+.quiz-confirm .btn {
+  width: 100%;
+  margin-top: 0.6rem;
+  gap: 0.6rem;
+}
+.quiz-confirm .btn svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  stroke: currentColor;
+  fill: none;
+  flex: 0 0 auto;
 }
 
 /* Honeypot anti-spam: fora da tela, invisível também para leitores
