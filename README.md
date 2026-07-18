@@ -38,14 +38,41 @@ assets/img/favicon.svg
 
 | O quê | Onde |
 | --- | --- |
-| **Número do WhatsApp** (placeholder `5599999999999`) | `assets/js/config.js` |
+| Número do WhatsApp (real: `5548996289329`) | `assets/js/config.js` + hrefs estáticos no `index.html` |
+| Mensagem dos botões de WhatsApp direto (⚠️ texto sugerido, confirmar com a cliente) | `whatsappDirectMessage` em `assets/js/config.js` |
 | **Perguntas do quiz** (hoje `[A CONFIRMAR]` — **não publicar assim**) | array `QUESTIONS` em `assets/js/quiz-engine.js` |
 | IDs de GTM / Meta Pixel / GA4 | `assets/js/analytics.js` (e descomente os `preconnect` no `<head>`) |
 | URL da política de privacidade (LGPD) | `assets/js/config.js` |
-| Links de Instagram / YouTube | `assets/js/config.js` |
+| Links de Instagram / YouTube (reais) | `assets/js/config.js` + hrefs estáticos no `index.html` |
+| ID do vídeo do hero (YouTube Short `1Ta_MJS6rYQ`) | `assets/js/config.js` (fachada em `ui.js`) |
 | Cores da marca | variáveis `:root` no `<style>` do `index.html` **e** em `critical.css` |
 | Texto da faixa do vídeo ("DIAGNÓSTICO MY ESSENCIAL" — grafia a confirmar) | `index.html`, seção hero |
-| Vídeo do hero / foto da Thabata | trocar o conteúdo dos `.media-frame` no `index.html` (manter as proporções 4/5 e 3/4 para não gerar CLS). Recomendado para o vídeo: padrão *facade* — imagem de capa + play; o arquivo só carrega no clique |
+
+## Imagens (como foram geradas / como regenerar)
+
+- **Capa do vídeo** (`video-capa.webp` 41KB + `.jpg` fallback): thumbnail
+  retrato oficial do Short (`i.ytimg.com/vi/1Ta_MJS6rYQ/oardefault.jpg`,
+  1080x1920 / 298KB), recortada em 4:5 e redimensionada para 752x940
+  (2x o tamanho de exibição). Self-hosted de propósito: a thumb remota
+  estouraria o orçamento de 150KB da primeira dobra e adicionaria uma
+  conexão de terceiros no caminho do LCP.
+- **Foto da Thabata** (`eu.webp` 14KB + `eu.jpg` fallback, origem `eu.png`
+  mantida no repositório apenas como fonte — o navegador nunca a baixa).
+- Para regenerar (Node + [sharp](https://sharp.pixelplumbing.com), uso
+  único de linha de comando, não é dependência do site):
+  ```
+  npm i sharp --no-save
+  node -e "const s=require('sharp');s('origem.png').resize({width:640,withoutEnlargement:true}).webp({quality:78}).toFile('assets/img/eu.webp')"
+  ```
+
+## Vídeo do hero (fachada)
+
+No carregamento só existe a capa self-hosted + botão de play (SVG).
+O `<iframe>` do `youtube-nocookie.com` (`autoplay=1&rel=0`) só é criado
+no clique (`initVideoFacade` em `ui.js`); no `mouseenter`/`touchstart`/
+`focus` do play, um `preconnect` dinâmico aquece a conexão antes do
+clique. A faixa "DIAGNÓSTICO MY ESSENCIAL" e a legenda são HTML real e
+permanecem fora do iframe.
 
 ## CSS crítico
 
@@ -107,10 +134,13 @@ Verificado no código:
 
 - [x] Zero frameworks, zero libs, zero CDN de terceiros; ícones SVG inline
 - [x] 2 famílias de fonte self-hosted (WOFF2, subset latino, `font-display: swap`, preload): Playfair 700 (23 KB) + Inter variável 400–600 (48 KB)
-- [x] Peso da primeira dobra ≈ 90 KB (HTML + CSS crítico inline + 2 fontes) — meta < 150 KB
+- [x] Peso da primeira dobra ≈ 136 KB (HTML ~24 KB + CSS crítico inline + fontes 71 KB + capa do vídeo 41 KB) — meta < 150 KB
+- [x] Capa do vídeo (LCP) com `preload` + `fetchpriority="high"`, `<picture>` WebP + fallback JPEG, `width`/`height` definidos
+- [x] YouTube em fachada: iframe do `youtube-nocookie` só no clique, `preconnect` dinâmico no hover/touch — zero terceiros no load
+- [x] Foto com `<picture>` WebP (14 KB) + JPEG, `loading="lazy"`, `width`/`height` definidos
 - [x] CSS crítico inline; `main.css` sem bloquear render; JS como ES Modules (deferidos por padrão)
 - [x] Nenhum script de terceiros no caminho do LCP (GTM/Pixel/GA4 só após `load` + idle)
-- [x] Placeholders de mídia com `aspect-ratio` fixo → CLS ~0 agora e quando a mídia real entrar
+- [x] Mídia dentro de caixas com `aspect-ratio` fixo + `object-fit: cover` → CLS ~0, inclusive na troca capa→iframe
 - [x] Acessibilidade: contraste AA na paleta, `aria-live` no progresso do quiz, navegação por teclado + focus trap + Esc no modal, foco visível customizado, `aria-label` nos botões de ícone, alvos de toque ≥ 44px, `prefers-reduced-motion` respeitado
 - [x] LGPD: checkbox de consentimento antes de abrir o WhatsApp + honeypot anti-spam acessível
 - [x] Todos os CTAs terminam com "→"; copy 100% igual à aprovada
@@ -123,10 +153,12 @@ Validar após o deploy (depende de ambiente real):
 ## Pendências (não publicar sem resolver)
 
 1. **Perguntas reais do quiz** — hoje são placeholders `[A CONFIRMAR]`
-2. **Número do WhatsApp** real em `config.js`
-3. Grafia da faixa do vídeo ("DIAGNÓSTICO MY ESSENCIAL"?)
-4. URL da política de privacidade (LGPD)
-5. Links de Instagram e YouTube
-6. Vídeo do hero e foto da Thabata (placeholders reservados)
-7. IDs de GTM / Meta Pixel / GA4
-8. Paleta/logos oficiais da marca, se existirem (trocar só as variáveis CSS)
+2. Grafia da faixa do vídeo ("DIAGNÓSTICO MY ESSENCIAL"?)
+3. URL da política de privacidade (LGPD)
+4. IDs de GTM / Meta Pixel / GA4
+5. Confirmar com a cliente o texto pré-preenchido dos botões de WhatsApp
+   direto (`whatsappDirectMessage` em `config.js` — é sugestão, não copy aprovada)
+6. Paleta/logos oficiais da marca, se existirem (trocar só as variáveis CSS)
+
+Resolvidos: número de WhatsApp (`5548996289329`), Instagram/YouTube,
+vídeo do hero (Short em fachada) e foto da Thabata.

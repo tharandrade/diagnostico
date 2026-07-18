@@ -5,22 +5,25 @@
    ========================================================= */
 
 export const CONFIG = {
-  /* ⚠️ PLACEHOLDER — trocar pelo número real do WhatsApp.
-     Formato: só dígitos, DDI + DDD + número. Ex.: "5511987654321" */
-  whatsappNumber: "5599999999999",
+  /* Número real confirmado (DDI 55 + DDD 48). */
+  whatsappNumber: "5548996289329",
 
   /* Mensagem dos botões de WhatsApp DIRETO (flutuante e "Fale conosco").
+     ⚠️ Texto sugerido, ainda não é copy aprovada — confirmar com a cliente.
      A mensagem do fim do quiz é montada em scoring.js (cita o pilar mais fraco). */
   whatsappDirectMessage:
-    "Olá! Vim pela página do diagnóstico do Método Yuka e quero conversar.",
+    "Olá! Vim pelo site do Método Yuka e quero saber mais sobre o diagnóstico.",
+
+  /* Vídeo do hero: YouTube Short embutido em fachada (só carrega ao clicar). */
+  youtubeVideoId: "1Ta_MJS6rYQ",
 
   /* ⚠️ PLACEHOLDER — URL da política de privacidade (obrigatória para o
      consentimento LGPD do quiz). Enquanto vazia, o texto do consentimento
      aparece sem link. */
   privacyPolicyUrl: "",
 
-  /* ⚠️ PLACEHOLDER — links do bloco "Fale conosco".
-     Enquanto vazios, os botões ficam com href="#". */
-  instagramUrl: "",
-  youtubeUrl: "",
+  /* Links reais do bloco "Fale conosco" (também estão no HTML como href
+     estático — manter os dois em sincronia se mudarem). */
+  instagramUrl: "https://www.instagram.com/metodoyuka/",
+  youtubeUrl: "https://www.youtube.com/@metodoyuka",
 };

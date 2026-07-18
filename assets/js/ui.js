@@ -1,8 +1,68 @@
 /* =========================================================
    ui.js — Interações de página: reveal on scroll,
-   barra de CTA fixa no mobile e utilitário de foco do modal.
+   barra de CTA fixa no mobile, fachada do vídeo do hero
+   e utilitário de foco do modal.
    Sem bibliotecas: IntersectionObserver + classes CSS.
    ========================================================= */
+
+import { CONFIG } from "./config.js";
+
+/**
+ * Fachada do vídeo do hero (facade pattern):
+ * no load só existe a imagem de capa self-hosted + botão de play.
+ * O iframe do YouTube (youtube-nocookie) só é criado no clique —
+ * zero JS/cookies de terceiros antes disso. No mouseenter/touchstart/
+ * focus do play, um <link rel="preconnect"> dinâmico aquece a conexão
+ * para o clique real ser mais rápido.
+ */
+export function initVideoFacade() {
+  const frame = document.getElementById("hero-video");
+  if (!frame) return;
+  const play = frame.querySelector(".media-frame__play");
+  if (!play) return;
+
+  const warm = () => {
+    ["https://www.youtube-nocookie.com", "https://i.ytimg.com"].forEach(
+      (href) => {
+        if (
+          document.head.querySelector(
+            'link[rel="preconnect"][href="' + href + '"]'
+          )
+        )
+          return;
+        const link = document.createElement("link");
+        link.rel = "preconnect";
+        link.href = href;
+        document.head.appendChild(link);
+      }
+    );
+  };
+  play.addEventListener("mouseenter", warm, { once: true });
+  play.addEventListener("touchstart", warm, { once: true, passive: true });
+  play.addEventListener("focus", warm, { once: true });
+
+  play.addEventListener(
+    "click",
+    () => {
+      warm();
+      const iframe = document.createElement("iframe");
+      iframe.className = "media-frame__iframe";
+      iframe.src =
+        "https://www.youtube-nocookie.com/embed/" +
+        CONFIG.youtubeVideoId +
+        "?autoplay=1&rel=0&playsinline=1";
+      iframe.title = "Vídeo: Diagnóstico Método Yuka";
+      iframe.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
+      iframe.setAttribute("allowfullscreen", "");
+      const pic = frame.querySelector("picture");
+      if (pic) pic.remove();
+      play.remove();
+      frame.appendChild(iframe);
+      iframe.focus();
+    },
+    { once: true }
+  );
+}
 
 /** Reveal on scroll. Com prefers-reduced-motion, tudo aparece direto. */
 export function initReveals() {

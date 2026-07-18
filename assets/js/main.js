@@ -6,13 +6,14 @@
 import { CONFIG } from "./config.js";
 import { initAnalytics, track } from "./analytics.js";
 import { initQuiz, openQuiz } from "./quiz-engine.js";
-import { initReveals, initStickyBar } from "./ui.js";
+import { initReveals, initStickyBar, initVideoFacade } from "./ui.js";
 import { buildWhatsAppUrl } from "./scoring.js";
 
 initAnalytics();
 initQuiz();
 initReveals();
 initStickyBar();
+initVideoFacade();
 
 /* Todos os CTAs de diagnóstico abrem o quiz */
 document.querySelectorAll(".js-open-quiz").forEach((btn) => {
@@ -27,7 +28,7 @@ const directUrl = buildWhatsAppUrl(
 document.querySelectorAll("[data-wa-direct]").forEach((link) => {
   link.href = directUrl;
   link.target = "_blank";
-  link.rel = "noopener";
+  link.rel = "noopener noreferrer";
   link.addEventListener("click", () =>
     track("cta_whatsapp_click", { origin: link.dataset.waDirect })
   );

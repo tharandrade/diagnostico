@@ -14,8 +14,10 @@
   <meta property="og:title" content="Diagnóstico gratuito para marcenarias | Método Yuka">
   <meta property="og:description" content="Sua marcenaria vende, entrega, mas o dinheiro não sobra? Descubra onde está o principal gargalo em menos de 2 minutos.">
 
-  <!-- Preconnects: fontes são self-hosted (não precisam). Ativar os de
-       tracking junto com os IDs em analytics.js:
+  <!-- Preconnects: fontes e capa do vídeo são self-hosted (não precisam).
+       Os domínios do YouTube (youtube-nocookie/i.ytimg) são aquecidos
+       dinamicamente no hover/touch do play (ui.js) — nada de terceiros
+       no caminho do LCP. Ativar os de tracking junto com os IDs em analytics.js:
   <link rel="preconnect" href="https://www.googletagmanager.com">
   <link rel="preconnect" href="https://connect.facebook.net">
   -->
@@ -23,6 +25,9 @@
   <!-- Fontes críticas: preload evita flash de fallback prolongado -->
   <link rel="preload" href="assets/fonts/playfair-display-700.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+
+  <!-- Capa do vídeo = LCP da página: preload com prioridade máxima -->
+  <link rel="preload" href="assets/img/video-capa.webp" as="image" type="image/webp" fetchpriority="high">
 
   <!-- Habilita as animações de reveal só quando há JS (sem JS, tudo visível) -->
   <script>document.documentElement.classList.add("js")</script>
@@ -61,9 +66,13 @@ h1,h2,h3{font-family:var(--font-serif);font-weight:700;color:var(--c-ink);line-h
 @media (min-width:56rem){.hero{padding:4.5rem 0 5rem}.hero__grid{grid-template-columns:1.05fr .95fr;gap:3.5rem}}
 .media-frame{position:relative;aspect-ratio:4/5;width:min(100%,23.5rem);margin-inline:auto;background:#dcd8cc;border-radius:18px;overflow:hidden;box-shadow:0 14px 34px rgba(33,39,30,.14)}
 .media-frame--photo{aspect-ratio:3/4;border-radius:var(--radius)}
-.media-frame__play{position:absolute;inset:0;margin:auto;width:4rem;height:4rem;border-radius:50%;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.media-frame picture,.media-frame img,.media-frame__iframe{position:absolute;inset:0;width:100%;height:100%}
+.media-frame img{object-fit:cover}
+.media-frame__iframe{border:0}
+.media-frame__play{position:absolute;inset:0;margin:auto;width:4rem;height:4rem;border:0;padding:0;cursor:pointer;border-radius:50%;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.18);transition:transform .2s ease}
+.media-frame__play:hover{transform:scale(1.06)}
 .media-frame__play svg{width:1.4rem;height:1.4rem;fill:var(--c-green-dark);margin-left:.2rem}
-.media-frame__strip{position:absolute;left:50%;transform:translateX(-50%);bottom:17%;margin:0;background:var(--c-green);color:var(--c-white);font-style:italic;font-weight:600;font-size:.82rem;letter-spacing:.05em;padding:.4rem 1rem;white-space:nowrap;border-radius:3px}
+.media-frame__strip{pointer-events:none;z-index:2;position:absolute;left:50%;transform:translateX(-50%);bottom:17%;margin:0;background:var(--c-green);color:var(--c-white);font-style:italic;font-weight:600;font-size:.82rem;letter-spacing:.05em;padding:.4rem 1rem;white-space:nowrap;border-radius:3px}
 .media-frame__hint{position:absolute;left:0;right:0;bottom:.9rem;margin:0;text-align:center;font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;color:#7c8076}
 .media-caption{font-style:italic;font-size:.84rem;color:var(--c-muted);text-align:center;width:min(100%,23.5rem);margin:.95rem auto 0}
 .float-wa{position:fixed;right:1.15rem;bottom:1.15rem;z-index:60;width:3.5rem;height:3.5rem;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 22px rgba(0,0,0,.25);transition:transform .2s ease,bottom .25s ease}
@@ -106,15 +115,18 @@ body.has-sticky-cta .float-wa{bottom:5.6rem}
           <noscript><p class="hero__micro">Para fazer o diagnóstico, ative o JavaScript no seu navegador.</p></noscript>
         </div>
         <div class="hero__media">
-          <!-- PLACEHOLDER DE VÍDEO — quando o arquivo chegar, substituir o
-               conteúdo deste .media-frame por um <video>/facade com a mesma
-               proporção 4/5. A faixa de texto abaixo é HTML real (acessível
-               e indexável), não imagem. -->
-          <div class="media-frame">
-            <span class="media-frame__play" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-play"/></svg></span>
+          <!-- VÍDEO EM FACHADA (facade pattern): no load só carrega a capa
+               self-hosted (recorte 4:5 da thumb do Short, 41KB WebP). O
+               iframe do youtube-nocookie só é criado ao clicar (ui.js).
+               A faixa de texto é HTML real (acessível e indexável). -->
+          <div class="media-frame" id="hero-video">
+            <picture>
+              <source srcset="assets/img/video-capa.webp" type="image/webp">
+              <img src="assets/img/video-capa.jpg" width="752" height="940" alt="" fetchpriority="high" decoding="async">
+            </picture>
+            <button type="button" class="media-frame__play" aria-label="Assistir vídeo: Diagnóstico Método Yuka"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-play"/></svg></button>
             <!-- ⚠️ Grafia da faixa a confirmar com a cliente (briefing, seção 10, item 3) -->
             <p class="media-frame__strip">DIAGNÓSTICO MY ESSENCIAL</p>
-            <p class="media-frame__hint">Vídeo em breve</p>
           </div>
           <p class="media-caption">Entenda, em poucos minutos, por que muitas marcenarias trabalham muito, mas continuam sem clareza de lucro.</p>
         </div>
@@ -213,10 +225,13 @@ body.has-sticky-cta .float-wa{bottom:5.6rem}
     <section class="section" aria-labelledby="sobre-title">
       <div class="container about">
         <div class="about__media reveal">
-          <!-- PLACEHOLDER DA FOTO — trocar por <img src="..." width height
-               loading="lazy"> mantendo a proporção 3/4 (zero CLS) -->
+          <!-- Foto real: WebP comprimido (14KB) + fallback JPEG, dentro da
+               caixa 3/4 com object-fit: cover (zero CLS). Original: eu.png -->
           <div class="media-frame media-frame--photo">
-            <p class="media-frame__hint">Foto em breve</p>
+            <picture>
+              <source srcset="assets/img/eu.webp" type="image/webp">
+              <img src="assets/img/eu.jpg" width="454" height="1024" loading="lazy" decoding="async" alt="Thabata Andrade, fundadora do Método Yuka e da Yucca Móveis">
+            </picture>
           </div>
         </div>
         <div class="about__text">
@@ -251,9 +266,11 @@ body.has-sticky-cta .float-wa{bottom:5.6rem}
       <div class="container">
         <h2 class="section__title" id="contato-title">Fale conosco</h2>
         <div class="contact-links reveal">
-          <a class="contact-btn contact-btn--wa" href="#" data-wa-direct="contato"><svg aria-hidden="true"><use href="#i-wa"/></svg>WhatsApp</a>
-          <a class="contact-btn contact-btn--ig" href="#" data-social="instagram" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-ig"/></svg>Instagram</a>
-          <a class="contact-btn contact-btn--yt" href="#" data-social="youtube" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-yt"/></svg>YouTube</a>
+          <!-- hrefs estáticos funcionam sem JS; o JS só acrescenta a mensagem
+               pré-preenchida no link de WhatsApp e o tracking de clique -->
+          <a class="contact-btn contact-btn--wa" href="https://wa.me/5548996289329" data-wa-direct="contato" target="_blank" rel="noopener noreferrer"><svg aria-hidden="true"><use href="#i-wa"/></svg>WhatsApp</a>
+          <a class="contact-btn contact-btn--ig" href="https://www.instagram.com/metodoyuka/" data-social="instagram" target="_blank" rel="noopener noreferrer"><svg aria-hidden="true"><use href="#i-ig"/></svg>Instagram</a>
+          <a class="contact-btn contact-btn--yt" href="https://www.youtube.com/@metodoyuka" data-social="youtube" target="_blank" rel="noopener noreferrer"><svg aria-hidden="true"><use href="#i-yt"/></svg>YouTube</a>
         </div>
       </div>
     </section>
@@ -269,7 +286,7 @@ body.has-sticky-cta .float-wa{bottom:5.6rem}
   </footer>
 
   <!-- ============ 9. BOTÃO FLUTUANTE DE WHATSAPP ============ -->
-  <a class="float-wa" href="#" data-wa-direct="flutuante" aria-label="Falar no WhatsApp">
+  <a class="float-wa" href="https://wa.me/5548996289329" data-wa-direct="flutuante" target="_blank" rel="noopener noreferrer" aria-label="Falar no WhatsApp">
     <svg aria-hidden="true"><use href="#i-wa"/></svg>
   </a>
 

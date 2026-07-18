@@ -210,6 +210,30 @@ h3 {
   aspect-ratio: 3 / 4;
   border-radius: var(--radius);
 }
+/* Capa/foto/iframe preenchem a caixa de aspect-ratio (zero CLS) */
+.media-frame picture,
+.media-frame img,
+.media-frame__iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.media-frame img {
+  object-fit: cover;
+}
+.media-frame__iframe {
+  border: 0;
+}
+.media-frame__play {
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.media-frame__play:hover {
+  transform: scale(1.06);
+}
 .media-frame__play {
   position: absolute;
   inset: 0;
@@ -230,6 +254,8 @@ h3 {
   margin-left: 0.2rem;
 }
 .media-frame__strip {
+  pointer-events: none; /* nunca bloqueia o play nem o iframe */
+  z-index: 2;
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
