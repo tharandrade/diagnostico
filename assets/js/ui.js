@@ -6,6 +6,83 @@
    ========================================================= */
 
 import { CONFIG } from "./config.js";
+import {
+  trackVideoStart,
+  trackVideoProgress,
+  trackVideoComplete,
+} from "./analytics.js";
+
+/* Título usado nos eventos de tracking da VSL (não é copy visível
+   na página — só identifica o vídeo nos eventos do Pixel/dataLayer). */
+const VIDEO_TITLE = "VSL Diagnostico";
+
+/* Carrega a YouTube IFrame Player API sob demanda (só quando o
+   vídeo é realmente aberto) e resolve com o objeto window.YT.
+   Nunca é chamada antes do clique no play — zero JS de terceiros
+   no carregamento da página. */
+let ytApiPromise = null;
+function loadYouTubeIframeApi() {
+  if (window.YT && window.YT.Player) return Promise.resolve(window.YT);
+  if (ytApiPromise) return ytApiPromise;
+  ytApiPromise = new Promise((resolve) => {
+    const previous = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = function () {
+      if (typeof previous === "function") previous();
+      resolve(window.YT);
+    };
+    const s = document.createElement("script");
+    s.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(s);
+  });
+  return ytApiPromise;
+}
+
+/** Conecta o tracking de reprodução real (YouTube IFrame Player API)
+    ao iframe já criado pela fachada — não cria um novo player, não
+    altera autoplay/controles/ID/proporção, só observa o estado. */
+function attachPlaybackTracking(iframeEl) {
+  const videoId = CONFIG.youtubeVideoId;
+  loadYouTubeIframeApi().then((YT) => {
+    let pollId = null;
+
+    const stopPolling = () => {
+      if (pollId) {
+        clearInterval(pollId);
+        pollId = null;
+      }
+    };
+
+    const startPolling = (player) => {
+      stopPolling();
+      pollId = setInterval(() => {
+        const duration = player.getDuration();
+        const current = player.getCurrentTime();
+        if (!duration) return;
+        trackVideoProgress((current / duration) * 100, videoId, VIDEO_TITLE);
+      }, 500);
+    };
+
+    new YT.Player(iframeEl, {
+      events: {
+        onStateChange: (event) => {
+          const state = event.data;
+          if (state === YT.PlayerState.PLAYING) {
+            trackVideoStart(videoId, VIDEO_TITLE);
+            startPolling(event.target);
+          } else if (state === YT.PlayerState.ENDED) {
+            stopPolling();
+            trackVideoProgress(100, videoId, VIDEO_TITLE);
+            trackVideoComplete(videoId, VIDEO_TITLE);
+          } else {
+            /* PAUSED / BUFFERING / CUED: só pausa o polling, não
+               perde os marcos já registrados nesta reprodução */
+            stopPolling();
+          }
+        },
+      },
+    });
+  });
+}
 
 /**
  * Fachada do vídeo do hero (facade pattern):
@@ -50,7 +127,8 @@ export function initVideoFacade() {
       iframe.src =
         "https://www.youtube-nocookie.com/embed/" +
         CONFIG.youtubeVideoId +
-        "?autoplay=1&rel=0&playsinline=1";
+        "?autoplay=1&rel=0&playsinline=1&enablejsapi=1&origin=" +
+        encodeURIComponent(window.location.origin);
       iframe.title = "Vídeo: Diagnóstico Método Yuka";
       iframe.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
       iframe.setAttribute("allowfullscreen", "");
@@ -59,6 +137,7 @@ export function initVideoFacade() {
       play.remove();
       frame.appendChild(iframe);
       iframe.focus();
+      attachPlaybackTracking(iframe);
     },
     { once: true }
   );

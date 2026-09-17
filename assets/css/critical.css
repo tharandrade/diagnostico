@@ -161,8 +161,10 @@ h3 {
 }
 .hero__grid {
   display: grid;
-  gap: 2.75rem;
-  align-items: center;
+}
+.hero__copy {
+  max-width: 40rem;
+  margin-inline: auto;
 }
 .hero__title {
   font-size: clamp(2.05rem, 5.2vw, 2.9rem);
@@ -173,7 +175,7 @@ h3 {
   color: var(--c-green);
 }
 .hero__lead {
-  max-width: 34rem;
+  max-width: none;
 }
 .hero__cta {
   margin: 1.5rem 0 0;
@@ -188,9 +190,8 @@ h3 {
   .hero {
     padding: 4.5rem 0 5rem;
   }
-  .hero__grid {
-    grid-template-columns: 1.05fr 0.95fr;
-    gap: 3.5rem;
+  .hero__copy {
+    max-width: 46rem;
   }
 }
 

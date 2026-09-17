@@ -15,7 +15,7 @@ export const CONFIG = {
     "Olá! Vim pelo site do Método Yuka e quero saber mais sobre o diagnóstico.",
 
   /* Vídeo do hero: YouTube Short embutido em fachada (só carrega ao clicar). */
-  youtubeVideoId: "1Ta_MJS6rYQ",
+  youtubeVideoId: "Id0ujvS9rP4",
 
   /* Reservada para uso futuro (ex.: link no rodapé). O checkbox de
      consentimento LGPD foi removido do quiz por decisão da cliente
@@ -28,8 +28,9 @@ export const CONFIG = {
   youtubeUrl: "https://www.youtube.com/@metodoyuka",
 };
 
-/* TODO: cole aqui a URL real do webhook "Custom Webhook" criado no
-   cenário do Make.com (captura de leads — seção 11 do briefing).
-   Enquanto o placeholder estiver aqui, NENHUM envio é feito (o código
-   detecta o "[" inicial e pula em silêncio). Não usar URL inventada. */
-export const MAKE_WEBHOOK_URL = "[COLE_A_URL_DO_WEBHOOK_MAKE_AQUI]";
+/* A URL do webhook do Make.com NÃO fica mais aqui (nem em nenhum
+   arquivo do frontend): o navegador não chama o Make diretamente,
+   ele chama /api/submit-lead, que repassa ao Make server-side e só
+   confirma sucesso depois de uma resposta HTTP real (ver
+   api/submit-lead.js). Configure a URL real na variável de ambiente
+   MAKE_WEBHOOK_URL do projeto na Vercel. */

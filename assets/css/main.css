@@ -69,6 +69,11 @@
   color: var(--c-text);
 }
 
+/* ===== VSL (vídeo movido para logo abaixo da Hero) ===== */
+.vsl__media {
+  margin: 0 0 2.4rem;
+}
+
 /* ===== Grid dos 4 pilares ===== */
 .pillars {
   display: grid;

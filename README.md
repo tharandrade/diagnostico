@@ -44,18 +44,18 @@ assets/img/favicon.svg
 | IDs de GTM / GA4 (Pixel já instalado — só base) | `assets/js/analytics.js` (e descomente os `preconnect` no `<head>`) |
 | **URL do webhook do Make.com** (pendente) | constante `MAKE_WEBHOOK_URL` em `assets/js/config.js` |
 | Links de Instagram / YouTube (reais) | `assets/js/config.js` + hrefs estáticos no `index.html` |
-| ID do vídeo do hero (YouTube Short `1Ta_MJS6rYQ`) | `assets/js/config.js` (fachada em `ui.js`) |
+| ID do vídeo da VSL (YouTube `Id0ujvS9rP4`, seção logo após a Hero) | `assets/js/config.js` (fachada em `ui.js`) |
 | Cores da marca | variáveis `:root` no `<style>` do `index.html` **e** em `critical.css` |
 | Texto da faixa do vídeo ("DIAGNÓSTICO MY ESSENCIAL" — grafia a confirmar) | `index.html`, seção hero |
 
 ## Imagens (como foram geradas / como regenerar)
 
 - **Capa do vídeo** (`video-capa.webp` 41KB + `.jpg` fallback): thumbnail
-  retrato oficial do Short (`i.ytimg.com/vi/1Ta_MJS6rYQ/oardefault.jpg`,
-  1080x1920 / 298KB), recortada em 4:5 e redimensionada para 752x940
-  (2x o tamanho de exibição). Self-hosted de propósito: a thumb remota
-  estouraria o orçamento de 150KB da primeira dobra e adicionaria uma
-  conexão de terceiros no caminho do LCP.
+  retrato oficial do Short original, recortada em 4:5 e redimensionada
+  para 752x940 (2x o tamanho de exibição). Self-hosted de propósito.
+  Desde que a VSL saiu da 1ª dobra (agora fica logo abaixo da Hero), a
+  capa carrega com `loading="lazy"` e sem `preload`/`fetchpriority`
+  (deixou de ser o LCP da página).
 - **Foto da Thabata** (`eu.webp` 14KB + `eu.jpg` fallback, origem `eu.png`
   mantida no repositório apenas como fonte — o navegador nunca a baixa).
 - Para regenerar (Node + [sharp](https://sharp.pixelplumbing.com), uso
@@ -181,8 +181,8 @@ Verificado no código:
 
 - [x] Zero frameworks, zero libs, zero CDN de terceiros; ícones SVG inline
 - [x] 2 famílias de fonte self-hosted (WOFF2, subset latino, `font-display: swap`, preload): Playfair 700 (23 KB) + Inter variável 400–600 (48 KB)
-- [x] Peso da primeira dobra ≈ 136 KB (HTML ~24 KB + CSS crítico inline + fontes 71 KB + capa do vídeo 41 KB) — meta < 150 KB
-- [x] Capa do vídeo (LCP) com `preload` + `fetchpriority="high"`, `<picture>` WebP + fallback JPEG, `width`/`height` definidos
+- [x] Peso da primeira dobra ≈ 95 KB (HTML ~24 KB + CSS crítico inline + fontes 71 KB, sem imagem) — meta < 150 KB. A VSL (com a capa 41 KB) ficou fora da 1ª dobra desde que foi movida para a seção logo abaixo da Hero.
+- [x] Capa do vídeo com `<picture>` WebP + fallback JPEG, `width`/`height` definidos, `loading="lazy"` (não é mais LCP — o provável LCP da Hero passou a ser o texto do `<h1>`, coberto pelos preloads de fonte)
 - [x] YouTube em fachada: iframe do `youtube-nocookie` só no clique, `preconnect` dinâmico no hover/touch — zero terceiros no load
 - [x] Foto com `<picture>` WebP (14 KB) + JPEG, `loading="lazy"`, `width`/`height` definidos
 - [x] CSS crítico inline; `main.css` sem bloquear render; JS como ES Modules (deferidos por padrão)

@@ -4,7 +4,7 @@
    ========================================================= */
 
 import { CONFIG } from "./config.js";
-import { initAnalytics, track } from "./analytics.js";
+import { initAnalytics, trackWhatsAppClick } from "./analytics.js";
 import { initQuiz, openQuiz } from "./quiz-engine.js";
 import { initReveals, initStickyBar, initVideoFacade } from "./ui.js";
 import { buildWhatsAppUrl } from "./scoring.js";
@@ -20,7 +20,14 @@ document.querySelectorAll(".js-open-quiz").forEach((btn) => {
   btn.addEventListener("click", () => openQuiz(btn));
 });
 
-/* Links de WhatsApp direto (botão flutuante + "Fale conosco") */
+/* Links de WhatsApp direto (botão flutuante + "Fale conosco").
+   data-wa-direct identifica o elemento real no HTML; mapeamos para
+   o vocabulário de "placement" pedido pelo tracking — o botão
+   flutuante é obrigatoriamente "floating_button". */
+const WA_PLACEMENTS = {
+  flutuante: "floating_button",
+  contato: "contact_section",
+};
 const directUrl = buildWhatsAppUrl(
   CONFIG.whatsappNumber,
   CONFIG.whatsappDirectMessage
@@ -30,7 +37,7 @@ document.querySelectorAll("[data-wa-direct]").forEach((link) => {
   link.target = "_blank";
   link.rel = "noopener noreferrer";
   link.addEventListener("click", () =>
-    track("cta_whatsapp_click", { origin: link.dataset.waDirect })
+    trackWhatsAppClick(WA_PLACEMENTS[link.dataset.waDirect] || link.dataset.waDirect)
   );
 });
 

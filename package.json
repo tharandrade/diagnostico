@@ -1,0 +1,6 @@
+{
+  "name": "diagnostico-metodo-yuka",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Landing page estática (HTML/CSS/JS vanilla) + função serverless /api/meta-capi na Vercel. Sem build, sem dependências de runtime."
+}

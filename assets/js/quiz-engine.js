@@ -6,10 +6,12 @@
      Etapas 1–3: escolha única, avança automático ao clicar.
      Etapa 4:    formulário nome/WhatsApp/e-mail + honeypot
                  (SEM checkbox LGPD — decisão da cliente, idêntico
-                 ao print). No submit válido: envio best-effort do
-                 lead completo ao webhook do Make.com, em paralelo
-                 com a transição para a etapa 5 (não espera nem
-                 mostra erro).
+                 ao print). No submit válido: o lead é enviado a
+                 /api/submit-lead (repassa ao Make.com server-side
+                 e aguarda confirmação real). Só quando o servidor
+                 confirma sucesso é que a etapa 5 aparece e o
+                 tracking de Lead dispara — em falha, o formulário
+                 mostra erro e mantém os dados preenchidos.
      Etapa 5:    confirmação centralizada, sem cabeçalho/barra;
                  só o botão "RECEBER MINHA ANÁLISE →" abre o
                  WhatsApp (resumo das respostas + nome — e-mail e
@@ -18,23 +20,29 @@
    Não existe pontuação/pilar calculado — a análise é feita
    pela equipe na conversa, não pelo site.
 
-   Eventos (analytics.js — dataLayer inerte até o GTM entrar;
-   eventos custom do Pixel desligados por flag nesta etapa):
-     quiz_start            ao abrir o modal
-     quiz_step_completed   etapas 1–3 no clique, etapa 4 no submit
-     lead_submitted        submit válido da etapa 4
-     quiz_completed        ao exibir a etapa 5
-     cta_whatsapp_click    clique em "RECEBER MINHA ANÁLISE →"
+   Eventos (analytics.js — camada central de tracking):
+     DiagnosticStart   1x por visita, na 1ª abertura real do modal
+     DiagnosticStep    ao EXIBIR cada etapa (1–4), no máx. 1x por etapa
+     Lead              no sucesso real do submit da etapa 4 (com event_id
+                        replicado na Conversions API — ver analytics.js)
+     WhatsAppClick     clique em "RECEBER MINHA ANÁLISE →" (placement
+                        "quiz_confirmation") — não é Lead, é outra métrica
    ========================================================= */
 
-import { CONFIG, MAKE_WEBHOOK_URL } from "./config.js";
+import { CONFIG } from "./config.js";
 import { buildWhatsAppMessage, buildWhatsAppUrl } from "./scoring.js";
 import {
   validateContactForm,
   showFormError,
   clearFormError,
 } from "./form-validation.js";
-import { track, pixelTrack, getStoredUtms } from "./analytics.js";
+import {
+  getStoredUtms,
+  trackDiagnosticStart,
+  trackDiagnosticStep,
+  trackLead,
+  trackWhatsAppClick,
+} from "./analytics.js";
 import { trapFocus } from "./ui.js";
 
 /* Copy aprovada das 3 perguntas (prints reais).
@@ -140,10 +148,8 @@ export function openQuiz(trigger) {
   leadNome = "";
   els.root.hidden = false;
   document.body.classList.add("no-scroll");
+  trackDiagnosticStart(trigger && trigger.dataset.origin);
   renderQuestion(0);
-  track("quiz_start", {
-    origin: (trigger && trigger.dataset.origin) || "desconhecido",
-  });
 }
 
 export function closeQuiz() {
@@ -187,6 +193,7 @@ function renderQuestion(index) {
   current = index;
   const q = QUESTIONS[index];
   setHeader(index + 1);
+  trackDiagnosticStep(index + 1, TOTAL_ETAPAS, q.campo);
   els.body.textContent = "";
 
   const wrap = document.createElement("fieldset");
@@ -224,7 +231,6 @@ function renderQuestion(index) {
 function selectOption(texto) {
   const q = QUESTIONS[current];
   answers[current] = { campo: q.campo, rotulo: q.rotulo, resposta: texto };
-  track("quiz_step_completed", { step: current + 1 });
   if (current + 1 < QUESTIONS.length) renderQuestion(current + 1);
   else renderForm();
 }
@@ -232,6 +238,7 @@ function selectOption(texto) {
 function renderForm() {
   current = 3;
   setHeader(4);
+  trackDiagnosticStep(4, TOTAL_ETAPAS, "contato");
   els.body.textContent = "";
 
   const form = document.createElement("form");
@@ -288,18 +295,36 @@ function renderForm() {
       return;
     }
     leadNome = form.querySelector("#lead-nome").value.trim();
-    /* Lead capturado: webhook + eventos AGORA, em paralelo com a etapa 5
-       (sem esperar resposta). O clique de WhatsApp é outro momento
-       (etapa 5) e outra métrica — não disparar juntos. */
-    sendLeadToMake({
+    const leadWhatsapp = form.querySelector("#lead-whatsapp").value.trim();
+    const leadEmail = form.querySelector("#lead-email").value.trim();
+
+    /* Validação client-side aprovada NÃO é sucesso — só sabemos que os
+       dados chegaram de verdade quando o servidor confirma que o Make
+       aceitou o lead. Desabilita o botão para não permitir reenvio
+       duplicado enquanto aguarda; texto do botão não muda. */
+    const submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+
+    submitLeadToServer({
       nome: leadNome,
-      whatsapp: form.querySelector("#lead-whatsapp").value.trim(),
-      email: form.querySelector("#lead-email").value.trim(),
+      whatsapp: leadWhatsapp,
+      email: leadEmail,
+    }).then((delivered) => {
+      if (!delivered) {
+        submitBtn.disabled = false;
+        showFormError(
+          form,
+          "Não foi possível enviar seus dados agora. Tente novamente em instantes.",
+          null
+        );
+        return;
+      }
+      /* Sucesso real confirmado pelo servidor: só agora a conversão é
+         válida — Pixel Lead (com event_id) + CAPI (mesmo event_id, ver
+         analytics.js) e a transição para a etapa 5. */
+      trackLead({ email: leadEmail, phone: leadWhatsapp });
+      renderConfirmation();
     });
-    track("quiz_step_completed", { step: 4 });
-    track("lead_submitted");
-    pixelTrack("Lead"); /* no-op nesta etapa (flag em analytics.js) */
-    renderConfirmation();
   });
 
   els.body.appendChild(form);
@@ -307,20 +332,14 @@ function renderForm() {
 }
 
 /**
- * Envio best-effort do lead completo para o Make.com (seção 11 do
- * briefing) — é onde os dados passam a ser guardados de verdade, já que
- * o site não tem backend. Nunca bloqueia nem atrasa a etapa 5; falha de
- * rede é só logada no console (sem erro para o usuário).
- *
- * CORS: tenta primeiro `cors` + `application/json` (webhooks do Make
- * normalmente aceitam). Se o navegador bloquear, refaz com `no-cors` +
- * `text/plain` — evita o preflight; o Make ainda parseia o corpo como
- * JSON, só não dá para ler a resposta (não precisamos ler).
+ * Envia o lead para /api/submit-lead, que repassa server-side ao
+ * webhook do Make.com e só responde sucesso depois de uma confirmação
+ * HTTP real do Make (ver api/submit-lead.js — nunca finge sucesso).
+ * Resolve `true` só nesse caso; `false` em qualquer falha (payload
+ * rejeitado, Make indisponível/timeout, rede do navegador etc.) —
+ * é esse booleano que decide se o formulário foi enviado com sucesso.
  */
-function sendLeadToMake(contato) {
-  /* placeholder "[COLE_A_URL...]" = cenário do Make ainda não criado */
-  if (!MAKE_WEBHOOK_URL || MAKE_WEBHOOK_URL.startsWith("[")) return;
-
+function submitLeadToServer(contato) {
   const utms = getStoredUtms();
   const respostas = {};
   answers.forEach((a) => {
@@ -338,28 +357,27 @@ function sendLeadToMake(contato) {
     timestamp: new Date().toISOString(),
   });
 
-  fetch(MAKE_WEBHOOK_URL, {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+  return fetch("/api/submit-lead", {
     method: "POST",
-    mode: "cors",
     headers: { "Content-Type": "application/json" },
     body,
-    keepalive: true, /* sobrevive se a pessoa navegar logo em seguida */
-  }).catch(() =>
-    fetch(MAKE_WEBHOOK_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "text/plain" },
-      body,
-      keepalive: true,
-    }).catch((err) => console.warn("Falha ao enviar lead pro Make.com:", err))
-  );
+    signal: controller.signal,
+  })
+    .then((res) => res.json().catch(() => ({ ok: false })))
+    .then((data) => !!data.ok)
+    .catch((err) => {
+      console.warn("Falha ao enviar lead:", err);
+      return false;
+    })
+    .finally(() => clearTimeout(timeoutId));
 }
 
 function renderConfirmation() {
   current = 4;
   hideHeader();
-  track("quiz_completed");
-  pixelTrack("CompleteRegistration"); /* no-op nesta etapa (flag em analytics.js) */
   els.body.textContent = "";
 
   const box = document.createElement("div");
@@ -385,7 +403,7 @@ function renderConfirmation() {
       getStoredUtms()
     );
     const url = buildWhatsAppUrl(CONFIG.whatsappNumber, msg);
-    track("cta_whatsapp_click", { origin: "quiz" });
+    trackWhatsAppClick("quiz_confirmation");
     window.open(url, "_blank", "noopener");
   });
 
