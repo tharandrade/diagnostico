@@ -158,6 +158,7 @@ h3 {
 /* ===== Hero ===== */
 .hero {
   padding: 3.25rem 0 3.5rem;
+  text-align: center;
 }
 .hero__grid {
   display: grid;
@@ -184,7 +185,7 @@ h3 {
   font-size: 0.82rem;
   color: var(--c-muted);
   max-width: 30rem;
-  margin: 0.95rem 0 0;
+  margin: 0.95rem auto 0;
 }
 @media (min-width: 56rem) {
   .hero {
