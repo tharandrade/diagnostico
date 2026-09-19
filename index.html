@@ -69,15 +69,15 @@ h1,h2,h3{font-family:var(--font-serif);font-weight:700;color:var(--c-ink);line-h
 @media (min-width:56rem){.hero{padding:4.5rem 0 5rem}.hero__copy{max-width:46rem}}
 .media-frame{position:relative;aspect-ratio:4/5;width:min(100%,23.5rem);margin-inline:auto;background:#dcd8cc;border-radius:18px;overflow:hidden;box-shadow:0 14px 34px rgba(33,39,30,.14)}
 .media-frame--photo{aspect-ratio:3/4;border-radius:var(--radius)}
+.media-frame--video{aspect-ratio:16/9;width:min(100%,40rem)}
 .media-frame picture,.media-frame img,.media-frame__iframe{position:absolute;inset:0;width:100%;height:100%}
 .media-frame img{object-fit:cover}
 .media-frame__iframe{border:0}
 .media-frame__play{position:absolute;inset:0;margin:auto;width:4rem;height:4rem;border:0;padding:0;cursor:pointer;border-radius:50%;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.18);transition:transform .2s ease}
 .media-frame__play:hover{transform:scale(1.06)}
 .media-frame__play svg{width:1.4rem;height:1.4rem;fill:var(--c-green-dark);margin-left:.2rem}
-.media-frame__strip{pointer-events:none;z-index:2;position:absolute;left:50%;transform:translateX(-50%);bottom:17%;margin:0;background:var(--c-green);color:var(--c-white);font-style:italic;font-weight:600;font-size:.82rem;letter-spacing:.05em;padding:.4rem 1rem;white-space:nowrap;border-radius:3px}
 .media-frame__hint{position:absolute;left:0;right:0;bottom:.9rem;margin:0;text-align:center;font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;color:#7c8076}
-.media-caption{font-style:italic;font-size:.84rem;color:var(--c-muted);text-align:center;width:min(100%,23.5rem);margin:.95rem auto 0}
+.media-caption{font-style:italic;font-size:.84rem;color:var(--c-muted);text-align:center;width:min(100%,40rem);margin:.95rem auto 0}
 .float-wa{position:fixed;right:1.15rem;bottom:1.15rem;z-index:60;width:3.5rem;height:3.5rem;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 22px rgba(0,0,0,.25);transition:transform .2s ease,bottom .25s ease}
 .float-wa:hover{transform:scale(1.07)}
 .float-wa svg{width:1.9rem;height:1.9rem;fill:var(--c-white)}
@@ -134,17 +134,14 @@ body.has-sticky-cta .float-wa{bottom:5.6rem}
         <p class="section__subtitle">Assista ao vídeo e entenda por que muitas marcenarias vendem, trabalham e entregam, mas continuam sem clareza sobre o resultado do negócio.</p>
         <div class="vsl__media">
           <!-- VÍDEO EM FACHADA (facade pattern): no load só carrega a capa
-               self-hosted (recorte 4:5 da thumb do Short, 41KB WebP). O
-               iframe do youtube-nocookie só é criado ao clicar (ui.js).
-               A faixa de texto é HTML real (acessível e indexável). -->
-          <div class="media-frame" id="hero-video">
+               self-hosted (thumbnail oficial do vídeo, 16:9). O iframe do
+               youtube-nocookie só é criado ao clicar (ui.js). -->
+          <div class="media-frame media-frame--video" id="hero-video">
             <picture>
               <source srcset="assets/img/video-capa.webp" type="image/webp">
-              <img src="assets/img/video-capa.jpg" width="752" height="940" alt="" loading="lazy" decoding="async">
+              <img src="assets/img/video-capa.jpg" width="1280" height="720" alt="" loading="lazy" decoding="async">
             </picture>
             <button type="button" class="media-frame__play" aria-label="Assistir vídeo: Diagnóstico Método Yuka"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-play"/></svg></button>
-            <!-- ⚠️ Grafia da faixa a confirmar com a cliente (briefing, seção 10, item 3) -->
-            <p class="media-frame__strip">DIAGNÓSTICO MY ESSENCIAL</p>
           </div>
           <p class="media-caption">Entenda, em poucos minutos, por que muitas marcenarias trabalham muito, mas continuam sem clareza de lucro.</p>
         </div>

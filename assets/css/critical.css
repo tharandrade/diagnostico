@@ -212,6 +212,10 @@ h3 {
   aspect-ratio: 3 / 4;
   border-radius: var(--radius);
 }
+.media-frame--video {
+  aspect-ratio: 16 / 9;
+  width: min(100%, 40rem);
+}
 /* Capa/foto/iframe preenchem a caixa de aspect-ratio (zero CLS) */
 .media-frame picture,
 .media-frame img,
@@ -255,24 +259,6 @@ h3 {
   fill: var(--c-green-dark);
   margin-left: 0.2rem;
 }
-.media-frame__strip {
-  pointer-events: none; /* nunca bloqueia o play nem o iframe */
-  z-index: 2;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 17%;
-  margin: 0;
-  background: var(--c-green);
-  color: var(--c-white);
-  font-style: italic;
-  font-weight: 600;
-  font-size: 0.82rem;
-  letter-spacing: 0.05em;
-  padding: 0.4rem 1rem;
-  white-space: nowrap;
-  border-radius: 3px;
-}
 .media-frame__hint {
   position: absolute;
   left: 0;
@@ -290,7 +276,7 @@ h3 {
   font-size: 0.84rem;
   color: var(--c-muted);
   text-align: center;
-  width: min(100%, 23.5rem);
+  width: min(100%, 40rem);
   margin: 0.95rem auto 0;
 }
 
