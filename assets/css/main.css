@@ -157,6 +157,9 @@
 .about__media .media-frame {
   width: min(100%, 20rem);
 }
+.about__media .media-frame img {
+  object-position: center top;
+}
 .about .icon-list {
   margin: 1.7rem 0 0;
   max-width: none;
