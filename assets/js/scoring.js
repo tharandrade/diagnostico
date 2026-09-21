@@ -28,6 +28,7 @@ export function buildWhatsAppMessage(lead, utms = {}) {
   });
   const ref = [utms.utm_source, utms.utm_campaign].filter(Boolean).join(" / ");
   if (ref) linhas.push("", "ref: " + ref);
+  linhas.push("", "Gostaria de agendar a conversa de direcionamento.");
   return linhas.join("\n");
 }
 
