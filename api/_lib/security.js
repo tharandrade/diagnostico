@@ -9,6 +9,8 @@
    ========================================================= */
 
 const ALLOWED_ORIGINS = [
+  "https://mydiagnostico.myuka.com.br",
+  "https://www.mydiagnostico.myuka.com.br",
   "https://diagnostico.myuka.com.br",
   "https://www.diagnostico.myuka.com.br",
 ];
