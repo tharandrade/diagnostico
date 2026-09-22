@@ -3,15 +3,16 @@
    + dataLayer). Toda chamada a fbq/dataLayer do projeto passa
    por aqui — nenhum outro arquivo chama fbq() diretamente.
 
-   Meta Pixel instalado: 1617277909405709 (implementação oficial:
-   stub síncrono + fbq('init')/PageView enfileirados; o script real
-   fbevents.js é solicitado com <script async> IMEDIATAMENTE — não
-   espera `load`/idle. Decisão deliberada: confiabilidade de
-   atribuição em tráfego pago (criação do cookie _fbp o mais cedo
-   possível) pesa mais aqui do que a alguns ms a menos de LCP; como
-   o script é `async`, ele não bloqueia parsing/renderização mesmo
-   começando a baixar cedo. GTM/GA4 continuam deferidos — não estão
-   instalados ainda e isso não foi pedido.
+   Meta Pixel instalado: 1617277909405709. O stub + fbq('init') +
+   fbq('track','PageView') + carregamento do fbevents.js (código-base
+   oficial da Meta, literal) rodam no <head> do index.html — não aqui.
+   Motivo: ferramentas de verificação de pixel (extensões, Gerenciador
+   de Eventos) procuram esse padrão como texto na página; dentro de um
+   módulo JS, com o ID passado por variável, elas não o reconhecem mesmo
+   com o pixel funcionando. Rodar no <head> também cria o cookie _fbp
+   o mais cedo possível para tráfego pago. Este arquivo só reaproveita
+   o window.fbq já existente para os demais eventos. GTM/GA4 continuam
+   deferidos — não estão instalados ainda e isso não foi pedido.
 
    Eventos Meta (Standard em fbq('track'), Custom em
    fbq('trackCustom') — necessário para aparecerem corretos no
@@ -79,49 +80,19 @@ export function initAnalytics() {
 }
 
 /* =========================================================
-   PIXEL — stub oficial + init/PageView (enfileirados) + o script
-   real fbevents.js pedido como <script async> imediatamente (ver
-   loadMetaPixelScript(), chamada no fim de initMetaPixel()) — não
-   espera window.load/requestIdleCallback, para o cookie _fbp ser
-   criado o mais cedo possível em tráfego pago.
+   PIXEL — stub, init, PageView e o carregamento do fbevents.js já
+   rodam no <head> do index.html (código-base oficial da Meta). Aqui
+   só espelhamos o page_view pro dataLayer (GTM/GA4 futuros) — nenhum
+   fbq('init')/fbq('track','PageView') de novo, para não duplicar.
    ========================================================= */
 
 let pixelInitialized = false;
 
-function ensurePixelStub() {
-  if (window.fbq) return;
-  const n = (window.fbq = function () {
-    n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
-  });
-  window._fbq = n;
-  n.push = n;
-  n.loaded = true;
-  n.version = "2.0";
-  n.queue = [];
-}
-
 function initMetaPixel() {
-  const id = ANALYTICS_IDS.META_PIXEL_ID;
-  if (!id || pixelInitialized) return;
+  if (!ANALYTICS_IDS.META_PIXEL_ID || pixelInitialized) return;
   pixelInitialized = true;
-  ensurePixelStub();
-  window.fbq("init", id);
-  pixelStandard("PageView");
   pushDataLayer("page_view", { page_path: window.location.pathname });
   debugLog("PageView");
-  loadMetaPixelScript();
-}
-
-let pixelScriptRequested = false;
-/** <script async>: baixa em paralelo ao parsing, executa sem
-    bloquear renderização — mas começa AGORA, não depois do load. */
-function loadMetaPixelScript() {
-  if (!ANALYTICS_IDS.META_PIXEL_ID || pixelScriptRequested) return;
-  pixelScriptRequested = true;
-  const s = document.createElement("script");
-  s.async = true;
-  s.src = "https://connect.facebook.net/en_US/fbevents.js";
-  document.head.appendChild(s);
 }
 
 /** Standard event (PageView, Lead, ...) — usa fbq('track', ...). */
@@ -426,8 +397,8 @@ export function trackWhatsAppClick(placement) {
 /* =========================================================
    GTM / GA4 — sem ID ainda (instalação futura); scripts só
    carregam depois do load + idle, nunca competem com o LCP. O
-   Pixel NÃO passa mais por aqui — ver loadMetaPixelScript(),
-   chamado imediatamente em initMetaPixel().
+   Pixel NÃO passa mais por aqui — código-base já roda no <head>
+   do index.html.
    ========================================================= */
 
 function scheduleLoaders() {

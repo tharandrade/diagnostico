@@ -17,10 +17,11 @@
   <!-- Preconnects: fontes e capa do vídeo são self-hosted (não precisam).
        Os domínios do YouTube (youtube-nocookie/i.ytimg) são aquecidos
        dinamicamente no hover/touch do play (ui.js) — nada de terceiros
-       no caminho do LCP. Ativar os de tracking junto com os IDs em analytics.js:
-  <link rel="preconnect" href="https://www.googletagmanager.com">
+       no caminho do LCP. connect.facebook.net já é usado pelo Meta Pixel
+       logo abaixo, no <head> — preconnect adianta essa conexão. GTM ainda
+       sem ID (pendente): ativar o preconnect dele quando for instalado. -->
   <link rel="preconnect" href="https://connect.facebook.net">
-  -->
+  <!-- <link rel="preconnect" href="https://www.googletagmanager.com"> -->
 
   <!-- Fontes críticas: preload evita flash de fallback prolongado -->
   <link rel="preload" href="assets/fonts/playfair-display-700.woff2" as="font" type="font/woff2" crossorigin>
@@ -91,10 +92,24 @@ body.has-sticky-cta .float-wa{bottom:5.6rem}
 </head>
 <body>
 
-  <!-- Meta Pixel (fallback sem JS) — o Pixel real é instalado via
-       assets/js/analytics.js (implementação oficial: stub + init +
-       PageView), carregado deferido para não competir com o LCP.
-       Mesmo Pixel ID dos dois lados: 1617277909405709. -->
+  <!-- Meta Pixel — código-base oficial, literal (não dentro de módulo JS),
+       para ser reconhecido por qualquer ferramenta de verificação de pixel
+       (extensões, Gerenciador de Eventos, verificação de domínio) e para
+       criar o cookie _fbp o quanto antes. Eventos além do PageView (Lead,
+       custom) continuam disparando via assets/js/analytics.js, que reusa
+       este mesmo window.fbq. Mesmo Pixel ID dos dois lados: 1617277909405709. -->
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '1617277909405709');
+  fbq('track', 'PageView');
+  </script>
   <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1617277909405709&amp;ev=PageView&amp;noscript=1" alt="" /></noscript>
 
   <!-- Sprite de ícones SVG inline (zero requisições externas) -->
