@@ -118,6 +118,7 @@ const CONFIRM_TEXT = {
 let current = 0;
 let answers = [];
 let leadNome = "";
+let leadEmail = "";
 let opener = null;
 const els = {};
 
@@ -146,6 +147,7 @@ export function openQuiz(trigger) {
   current = 0;
   answers = [];
   leadNome = "";
+  leadEmail = "";
   els.root.hidden = false;
   document.body.classList.add("no-scroll");
   trackDiagnosticStart(trigger && trigger.dataset.origin);
@@ -296,7 +298,7 @@ function renderForm() {
     }
     leadNome = form.querySelector("#lead-nome").value.trim();
     const leadWhatsapp = form.querySelector("#lead-whatsapp").value.trim();
-    const leadEmail = form.querySelector("#lead-email").value.trim();
+    leadEmail = form.querySelector("#lead-email").value.trim();
 
     /* Validação client-side aprovada NÃO é sucesso — só sabemos que os
        dados chegaram de verdade quando o servidor confirma que o Make
@@ -399,7 +401,7 @@ function renderConfirmation() {
 
   box.querySelector(".quiz-confirm__cta").addEventListener("click", () => {
     const msg = buildWhatsAppMessage(
-      { nome: leadNome, respostas: answers },
+      { nome: leadNome, email: leadEmail, respostas: answers },
       getStoredUtms()
     );
     const url = buildWhatsAppUrl(CONFIG.whatsappNumber, msg);

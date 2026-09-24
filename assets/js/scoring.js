@@ -12,7 +12,7 @@
 
 /**
  * Mensagem aberta ao clicar em "RECEBER MINHA ANÁLISE →".
- * @param {{nome: string, respostas: Array<{rotulo: string, resposta: string}>}} lead
+ * @param {{nome: string, email: string, respostas: Array<{rotulo: string, resposta: string}>}} lead
  * @param {Object} utms — UTMs capturados na chegada (atribuição de campanha)
  */
 export function buildWhatsAppMessage(lead, utms = {}) {
@@ -26,9 +26,11 @@ export function buildWhatsAppMessage(lead, utms = {}) {
   lead.respostas.forEach(({ rotulo, resposta }) => {
     linhas.push("• " + rotulo + ": " + resposta);
   });
-  const ref = [utms.utm_source, utms.utm_campaign].filter(Boolean).join(" / ");
-  if (ref) linhas.push("", "ref: " + ref);
-  linhas.push("", "Gostaria de agendar a conversa de direcionamento.");
+  if (lead.email) linhas.push("", "E-mail: " + lead.email);
+  linhas.push(
+    "",
+    "Gostaria de agendar a conversa de direcionamento com a Thabata."
+  );
   return linhas.join("\n");
 }
 
