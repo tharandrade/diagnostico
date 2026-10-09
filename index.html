@@ -21,12 +21,16 @@
   <link rel="preconnect" href="https://connect.facebook.net">
   <!-- <link rel="preconnect" href="https://www.googletagmanager.com"> -->
 
-  <!-- Fontes críticas: preload evita flash de fallback prolongado -->
-  <link rel="preload" href="assets/fonts/playfair-display-700.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="assets/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+  <!-- Fontes críticas: preload evita flash de fallback prolongado.
+       fetchpriority="low" nas duas: com font-display:swap o texto
+       nunca fica bloqueado (sempre pinta com a fonte de fallback),
+       então elas podem ceder banda para a foto da hero abaixo, que é
+       o elemento de LCP real da página. -->
+  <link rel="preload" href="assets/fonts/playfair-display-700.woff2" as="font" type="font/woff2" crossorigin fetchpriority="low">
+  <link rel="preload" href="assets/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin fetchpriority="low">
 
-  <!-- Foto real da Thabata na 1ª dobra: provável LCP da Hero agora,
-       por isso preload + fetchpriority alto no <img> abaixo. -->
+  <!-- Foto real da Thabata na 1ª dobra: elemento de LCP da Hero —
+       preload + fetchpriority alto no <img> abaixo. -->
   <link rel="preload" href="assets/img/thabata.jpg" as="image" fetchpriority="high">
 
   <!-- Habilita as animações de reveal só quando há JS (sem JS, tudo visível) -->
@@ -150,7 +154,7 @@ body.has-sticky-cta .float-wa{bottom:5.6rem}
         </div>
         <div class="hero__media">
           <div class="media-frame media-frame--photo">
-            <img src="assets/img/thabata.jpg" width="900" height="1125" alt="Thabata Andrade, criadora do Método Yuka" loading="eager" fetchpriority="high" decoding="async">
+            <img src="assets/img/thabata.jpg" width="640" height="800" alt="Thabata Andrade, criadora do Método Yuka" loading="eager" fetchpriority="high" decoding="async">
           </div>
           <p class="hero__media-caption"><strong>Thabata Andrade</strong><span>Fui sócia da Yucca Móveis por 8 anos e sou criadora do Método Yuka.</span></p>
         </div>
