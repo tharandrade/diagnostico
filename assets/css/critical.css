@@ -8,14 +8,15 @@
    ========================================================= */
 
 :root {
-  /* Cores aproximadas do print — trocar aqui quando vier o manual de marca */
-  --c-bg: #fbfaf6;            /* fundo claro principal */
-  --c-bg-alt: #efede5;        /* seções alternadas (greige) */
-  --c-card: #eceae2;          /* fundo dos cards */
-  --c-green-dark: #1f3b2c;    /* botões, faixas, títulos de card */
-  --c-green-dark-hover: #2a4e3a;
-  --c-green: #2e7d46;         /* destaque de texto, checks, progresso */
-  --c-red: #c6402f;           /* ícones ✗ das dores */
+  /* Identidade visual oficial do Método Yuka */
+  --c-bg: #ffffff;             /* fundo claro principal (branco) */
+  --c-bg-alt: #f3f1ea;         /* seções alternadas (cinza claro suave) */
+  --c-card: #f6eade;           /* fundo dos cards (creme) */
+  --c-green-dark: #11312b;     /* verde principal — botões, títulos de card */
+  --c-green-dark-hover: #1a4b40;
+  --c-green: #11312b;          /* destaque de texto, checks, progresso */
+  --c-cobre: #c16e44;          /* cobre — ícones ✗ das dores, detalhes */
+  --c-red: #c6402f;            /* mantido só p/ estado de erro do formulário do quiz */
   --c-ink: #21271e;           /* títulos */
   --c-text: #454b41;          /* texto de listas/cards */
   --c-body: #575d53;          /* corpo de texto */
@@ -157,11 +158,13 @@ h3 {
 
 /* ===== Hero ===== */
 .hero {
-  padding: 3.25rem 0 3.5rem;
+  padding: 3.25rem 0 3rem;
   text-align: center;
 }
 .hero__grid {
   display: grid;
+  gap: 2.75rem;
+  align-items: center;
 }
 .hero__copy {
   max-width: 40rem;
@@ -187,12 +190,48 @@ h3 {
   max-width: 30rem;
   margin: 0.95rem auto 0;
 }
+/* Coluna da foto (desktop: direita; mobile: abaixo do CTA, pela ordem
+   natural do DOM — .hero__media vem depois de .hero__copy) */
+.hero__media {
+  margin-top: 0.5rem;
+}
+.hero__media .media-frame {
+  width: min(100%, 19rem);
+}
+.hero__media-caption {
+  text-align: center;
+  max-width: 20rem;
+  margin: 1.1rem auto 0;
+}
+.hero__media-caption strong {
+  display: block;
+  font-family: var(--font-serif);
+  color: var(--c-ink);
+  font-size: 1.05rem;
+  margin-bottom: 0.3rem;
+}
+.hero__media-caption span {
+  color: var(--c-muted);
+  font-size: 0.86rem;
+}
 @media (min-width: 56rem) {
   .hero {
     padding: 4.5rem 0 5rem;
+    text-align: left;
+  }
+  .hero__grid {
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 3.5rem;
   }
   .hero__copy {
-    max-width: 46rem;
+    max-width: none;
+    margin-inline: 0;
+  }
+  .hero__media {
+    margin-top: 0;
+  }
+  .hero__media-caption {
+    margin-inline: auto;
   }
 }
 

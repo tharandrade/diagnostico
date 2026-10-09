@@ -58,6 +58,9 @@
 .ico--red {
   color: var(--c-red);
 }
+.ico--cobre {
+  color: var(--c-cobre);
+}
 .ico--green {
   color: var(--c-green);
 }
@@ -69,7 +72,8 @@
   color: var(--c-text);
 }
 
-/* ===== VSL (vídeo movido para logo abaixo da Hero) ===== */
+/* ===== VSL — section oculta via atributo `hidden` no HTML (ver
+   index.html); CSS mantido intacto, nada removido. ===== */
 .vsl {
   border-top: 1px solid #e2dfd4;
 }
@@ -77,56 +81,53 @@
   margin: 0 0 2.4rem;
 }
 
-/* ===== Grid dos 4 pilares ===== */
-.pillars {
+/* ===== "Como funciona o diagnóstico" — 3 passos ===== */
+.steps {
   display: grid;
   gap: 1.4rem;
-  margin-bottom: 2.6rem;
+  margin-bottom: 0;
 }
 @media (min-width: 48rem) {
-  .pillars {
-    grid-template-columns: 1fr 1fr;
+  .steps {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
-.pillar-card {
+.step-card {
   background: var(--c-card);
   border-radius: var(--radius);
-  padding: 1.7rem 1.7rem 1.5rem;
+  padding: 1.8rem 1.6rem;
   box-shadow: var(--shadow-card);
+  text-align: center;
 }
-.pillar-card__title {
-  font-size: 1.28rem;
-  color: var(--c-green-dark);
-  margin-bottom: 0.6rem;
+.step-card__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  background: var(--c-green-dark);
+  color: var(--c-white);
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 1.15rem;
+  margin-bottom: 1rem;
 }
-.pillar-card__question {
+.step-card__title {
+  font-size: 1.12rem;
+  color: var(--c-ink);
+  margin-bottom: 0.5rem;
+}
+.step-card__text {
   color: var(--c-text);
-  margin-bottom: 1.1rem;
-}
-.pillar-card__list {
-  list-style: none;
+  font-size: 0.95rem;
   margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 0.55rem;
-  font-size: 0.92rem;
-  color: var(--c-text);
-}
-.pillar-card__list li {
-  display: flex;
-  gap: 0.55rem;
-  align-items: flex-start;
-}
-.pillar-card__list .ico {
-  width: 0.85rem;
-  height: 0.85rem;
-  margin-top: 0.28rem;
 }
 
 /* ===== Caixa de destaque (borda lateral) ===== */
 .qualify-box {
   background: var(--c-white);
-  border-left: 5px solid var(--c-green-dark);
+  border-left: 5px solid var(--c-cobre);
   border-radius: 6px;
   box-shadow: var(--shadow-card);
   padding: 1.1rem 1.4rem;
@@ -254,14 +255,11 @@
   opacity: 1;
   transform: none;
 }
-.js .pillar-card.reveal:nth-child(2) {
+.js .step-card.reveal:nth-child(2) {
   transition-delay: 0.08s;
 }
-.js .pillar-card.reveal:nth-child(3) {
+.js .step-card.reveal:nth-child(3) {
   transition-delay: 0.12s;
-}
-.js .pillar-card.reveal:nth-child(4) {
-  transition-delay: 0.16s;
 }
 @media (prefers-reduced-motion: reduce) {
   .js .reveal {
