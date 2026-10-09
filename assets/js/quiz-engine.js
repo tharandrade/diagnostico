@@ -12,10 +12,11 @@
                  confirma sucesso é que a etapa 5 aparece e o
                  tracking de Lead dispara — em falha, o formulário
                  mostra erro e mantém os dados preenchidos.
-     Etapa 5:    confirmação centralizada, sem cabeçalho/barra;
-                 só o botão "RECEBER MINHA ANÁLISE →" abre o
-                 WhatsApp (resumo das respostas + nome — e-mail e
-                 telefone vão só pro Make.com, não pro texto).
+     Etapa 5:    confirmação centralizada, sem cabeçalho/barra —
+                 mostra a agenda do Google (iframe) para marcar uma
+                 conversa + link de WhatsApp como alternativa, caso
+                 nenhum horário sirva. O lead já está registrado antes
+                 dessa tela aparecer; agendar é opcional.
 
    Não existe pontuação/pilar calculado — a análise é feita
    pela equipe na conversa, não pelo site.
@@ -24,13 +25,17 @@
      DiagnosticStart   1x por visita, na 1ª abertura real do modal
      DiagnosticStep    ao EXIBIR cada etapa (1–4), no máx. 1x por etapa
      Lead              no sucesso real do submit da etapa 4 (com event_id
-                        replicado na Conversions API — ver analytics.js)
-     WhatsAppClick     clique em "RECEBER MINHA ANÁLISE →" (placement
-                        "quiz_confirmation") — não é Lead, é outra métrica
+                        replicado na Conversions API — ver analytics.js),
+                        dispara ANTES da tela de agendamento aparecer —
+                        agendar ou não não afeta o lead já registrado
+     WhatsAppClick     clique nos links diretos de WhatsApp fora do quiz
+                        (botão flutuante / "Fale conosco", ver main.js) —
+                        o link de fallback da tela de agendamento NÃO
+                        dispara esse evento (ver nota em renderConfirmation)
    ========================================================= */
 
 import { CONFIG } from "./config.js";
-import { buildWhatsAppMessage, buildWhatsAppUrl } from "./scoring.js";
+import { buildWhatsAppUrl } from "./scoring.js";
 import {
   validateContactForm,
   showFormError,
@@ -41,7 +46,6 @@ import {
   trackDiagnosticStart,
   trackDiagnosticStep,
   trackLead,
-  trackWhatsAppClick,
 } from "./analytics.js";
 import { trapFocus } from "./ui.js";
 
@@ -108,10 +112,10 @@ const FORM_TEXT = {
 };
 
 const CONFIRM_TEXT = {
-  titulo: "Diagnóstico recebido ✅",
-  p1: "Agora vou analisar suas respostas para identificar possíveis falhas de precificação, gargalos de produção e oportunidades de aumento de lucro na sua marcenaria.",
-  p2: "Clique no botão abaixo para receber sua análise pelo WhatsApp.",
-  botao: "RECEBER MINHA ANÁLISE",
+  titulo: "Recebi seu diagnóstico!",
+  subtitulo: "Agora escolha um dia e horário para conversarmos sobre sua marcenaria.",
+  linkAbrir: "Abrir agenda em uma nova aba ↗",
+  waPergunta: "Não encontrou um horário adequado? Entre em contato comigo pelo",
 };
 
 /* Estado: 0–2 = perguntas, 3 = formulário, 4 = confirmação */
@@ -377,10 +381,25 @@ function submitLeadToServer(contato) {
     .finally(() => clearTimeout(timeoutId));
 }
 
+/**
+ * Etapa 5: o lead já foi registrado e o Lead do Pixel já disparou em
+ * renderForm() ANTES desta função ser chamada — nada aqui afeta isso.
+ * Mostra a agenda oficial do Google (CONFIG.googleCalendarUrl) num
+ * iframe simples, mais um link para abrir a mesma página em nova aba
+ * (caso o iframe não carregue em algum navegador) e um link direto de
+ * WhatsApp como alternativa. Agendar é opcional — fechar o modal aqui
+ * não desfaz o lead já enviado ao Make.
+ *
+ * O link de WhatsApp NÃO chama trackWhatsAppClick: é só um link comum
+ * (sem clique obrigatório, sem novo evento de conversão), diferente
+ * dos links diretos do site (flutuante/"Fale conosco", ver main.js).
+ */
 function renderConfirmation() {
   current = 4;
   hideHeader();
   els.body.textContent = "";
+
+  const waUrl = buildWhatsAppUrl(CONFIG.whatsappNumber, CONFIG.whatsappDirectMessage);
 
   const box = document.createElement("div");
   box.className = "quiz-confirm";
@@ -389,25 +408,23 @@ function renderConfirmation() {
     CONFIRM_TEXT.titulo +
     "</h3>" +
     "<p>" +
-    CONFIRM_TEXT.p1 +
+    CONFIRM_TEXT.subtitulo +
     "</p>" +
-    "<p>" +
-    CONFIRM_TEXT.p2 +
-    "</p>" +
-    '<button type="button" class="btn quiz-confirm__cta">' +
-    '<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chat"/></svg> ' +
-    CONFIRM_TEXT.botao +
-    ' <span class="btn__arrow" aria-hidden="true">→</span></button>';
-
-  box.querySelector(".quiz-confirm__cta").addEventListener("click", () => {
-    const msg = buildWhatsAppMessage(
-      { nome: leadNome, email: leadEmail, respostas: answers },
-      getStoredUtms()
-    );
-    const url = buildWhatsAppUrl(CONFIG.whatsappNumber, msg);
-    trackWhatsAppClick("quiz_confirmation");
-    window.open(url, "_blank", "noopener");
-  });
+    '<div class="quiz-schedule">' +
+    '<iframe class="quiz-schedule__iframe" src="' +
+    CONFIG.googleCalendarUrl +
+    '" title="Agendar uma conversa com a Thabata" loading="lazy"></iframe>' +
+    "</div>" +
+    '<p class="quiz-schedule__open"><a href="' +
+    CONFIG.googleCalendarUrl +
+    '" target="_blank" rel="noopener noreferrer">' +
+    CONFIRM_TEXT.linkAbrir +
+    "</a></p>" +
+    '<p class="quiz-schedule__wa">' +
+    CONFIRM_TEXT.waPergunta +
+    ' <a href="' +
+    waUrl +
+    '" target="_blank" rel="noopener noreferrer">WhatsApp</a>.</p>';
 
   els.body.appendChild(box);
   focusTitle(box.querySelector(".quiz-confirm__title"));

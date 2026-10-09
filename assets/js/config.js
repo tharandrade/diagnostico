@@ -26,6 +26,12 @@ export const CONFIG = {
      estático — manter os dois em sincronia se mudarem). */
   instagramUrl: "https://www.instagram.com/metodoyuka/",
   youtubeUrl: "https://www.youtube.com/@metodoyuka",
+
+  /* Página oficial de agendamento do Google Calendar, exibida (embutida
+     via iframe) na tela de confirmação do diagnóstico, depois do envio
+     bem-sucedido. Não é integração própria: é só o link da agenda da
+     cliente, aberto incorporado + link alternativo em nova aba. */
+  googleCalendarUrl: "https://calendar.app.google/2EBV9XtQREdKVbXv9",
 };
 
 /* A URL do webhook do Make.com NÃO fica mais aqui (nem em nenhum

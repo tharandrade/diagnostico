@@ -498,6 +498,49 @@
   flex: 0 0 auto;
 }
 
+/* Agenda do Google (etapa 5) — iframe oficial, sem agenda própria */
+.quiz-schedule {
+  margin: 1.4rem 0 0.9rem;
+  border: 1.5px solid #e0ddd2;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--c-bg-alt);
+}
+.quiz-schedule__iframe {
+  display: block;
+  width: 100%;
+  height: 600px;
+  border: 0;
+}
+.quiz-schedule__open {
+  text-align: center;
+  font-size: 0.85rem;
+  margin: 0 0 1.2rem;
+}
+.quiz-schedule__open a {
+  color: var(--c-green-dark);
+  font-weight: 600;
+  text-decoration: none;
+}
+.quiz-schedule__open a:hover {
+  text-decoration: underline;
+}
+.quiz-schedule__wa {
+  font-size: 0.88rem;
+  text-align: center;
+  margin: 0;
+}
+.quiz-schedule__wa a {
+  color: var(--c-green-dark);
+  font-weight: 600;
+  text-decoration: underline;
+}
+@media (max-width: 26rem) {
+  .quiz-schedule__iframe {
+    height: 520px;
+  }
+}
+
 /* Honeypot anti-spam: fora da tela, invisível também para leitores
    (aria-hidden) e fora da ordem de tabulação (tabindex="-1") */
 .hp-field {
