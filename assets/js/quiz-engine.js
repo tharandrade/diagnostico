@@ -12,11 +12,13 @@
                  confirma sucesso é que a etapa 5 aparece e o
                  tracking de Lead dispara — em falha, o formulário
                  mostra erro e mantém os dados preenchidos.
-     Etapa 5:    confirmação centralizada, sem cabeçalho/barra —
-                 mostra a agenda do Google (iframe) para marcar uma
-                 conversa + link de WhatsApp como alternativa, caso
-                 nenhum horário sirva. O lead já está registrado antes
-                 dessa tela aparecer; agendar é opcional.
+     Etapa 5:    confirmação centralizada, sem cabeçalho/barra — um
+                 botão abre a página oficial de agendamento do Google
+                 em nova aba (link puro, nunca iframe/modal) + link de
+                 WhatsApp como alternativa, caso nenhum horário sirva.
+                 O lead já está registrado antes dessa tela aparecer;
+                 agendar é opcional, e o comportamento é o mesmo em
+                 desktop e mobile.
 
    Não existe pontuação/pilar calculado — a análise é feita
    pela equipe na conversa, não pelo site.
@@ -111,25 +113,16 @@ const FORM_TEXT = {
     "Sem spam. Suas respostas serão usadas para uma conversa real sobre sua marcenaria.",
 };
 
+/* Agendamento sempre via link direto (nunca iframe/modal), igual em
+   desktop e mobile — decisão da cliente após problemas de usabilidade
+   com a agenda incorporada. */
 const CONFIRM_TEXT = {
-  // Desktop: agenda embutida (iframe)
-  tituloDesktop: "Recebi seu diagnóstico!",
-  subtituloDesktop: "Agora escolha um dia e horário para conversarmos sobre sua marcenaria.",
-  dica: "Escolha uma data disponível (em azul) e role para ver os horários.",
-  carregando: "Buscando horários disponíveis...",
-  linkAbrir: "Prefere visualizar a agenda inteira? Abrir no Google Agenda ↗",
-  // Mobile: a própria página do Google recusa renderizar dentro de um
-  // iframe em telas estreitas (mostra "Abrir em outra página"), então
-  // aqui vai direto um botão que abre a agenda oficial em nova aba
-  tituloMobile: "Diagnóstico recebido!",
-  subtituloMobile: "Agora escolha um dia e horário para nossa conversa.",
-  botaoMobile: "ESCOLHER DIA E HORÁRIO",
-  waPergunta: "Não encontrou um horário adequado? Entre em contato comigo pelo",
+  titulo: "Recebi seu diagnóstico!",
+  texto: "Suas respostas já foram enviadas. Agora escolha um dia e horário para conversarmos sobre sua marcenaria.",
+  botao: "ESCOLHER DIA E HORÁRIO",
+  micro: "Você será direcionado ao Google Agenda para confirmar seu horário.",
+  waPergunta: "Não encontrou um horário adequado? Entre em contato pelo",
 };
-
-/* Mesmo breakpoint usado no resto do site para "desktop"
-   (ver @media (min-width: 48rem) em main.css). */
-const DESKTOP_MQ = "(min-width: 48rem)";
 
 /* Estado: 0–2 = perguntas, 3 = formulário, 4 = confirmação */
 let current = 0;
@@ -400,20 +393,15 @@ function submitLeadToServer(contato) {
  * Agendar é opcional; fechar o modal aqui não desfaz o lead já
  * enviado ao Make.
  *
- * Desktop (>= 48rem, mesmo breakpoint do resto do site): agenda do
- * Google embutida num iframe, com uma mensagem de carregamento
- * enquanto a página de terceiro não termina de responder (isso é
- * tempo do próprio Google — carregar o iframe só começa aqui, depois
- * da confirmação do envio, nunca na inicialização da landing page).
+ * Agendamento só por link direto (<a target="_blank">, nunca
+ * iframe/modal) — mesmo comportamento em desktop e mobile. Usar um
+ * <a href> real (em vez de window.open() via JS) é proposital: é a
+ * forma que navegadores NUNCA tratam como pop-up bloqueado, porque é
+ * resultado direto de um clique do usuário em um link de verdade.
  *
- * Mobile (< 48rem): o Google recusa renderizar a página de agendamento
- * dentro de um iframe em telas estreitas (mostra "Abrir em outra
- * página" em branco) — por isso aqui nem criamos o iframe; vai direto
- * um botão que abre a mesma URL oficial em nova aba.
- *
- * Em ambos os casos, o link de WhatsApp NÃO chama trackWhatsAppClick:
- * é só um link comum (sem novo evento de conversão), diferente dos
- * links diretos do site (flutuante/"Fale conosco", ver main.js).
+ * O link de WhatsApp NÃO chama trackWhatsAppClick: é só um link comum
+ * (sem novo evento de conversão), diferente dos links diretos do site
+ * (flutuante/"Fale conosco", ver main.js).
  */
 function renderConfirmation() {
   current = 4;
@@ -421,74 +409,29 @@ function renderConfirmation() {
   els.body.textContent = "";
 
   const waUrl = buildWhatsAppUrl(CONFIG.whatsappNumber, CONFIG.whatsappDirectMessage);
-  const isDesktop = window.matchMedia(DESKTOP_MQ).matches;
 
   const box = document.createElement("div");
   box.className = "quiz-confirm";
   box.innerHTML =
     '<h3 class="quiz-confirm__title" tabindex="-1">' +
-    (isDesktop ? CONFIRM_TEXT.tituloDesktop : CONFIRM_TEXT.tituloMobile) +
+    CONFIRM_TEXT.titulo +
     "</h3>" +
     "<p>" +
-    (isDesktop ? CONFIRM_TEXT.subtituloDesktop : CONFIRM_TEXT.subtituloMobile) +
-    "</p>";
-
-  if (isDesktop) {
-    const hint = document.createElement("p");
-    hint.className = "quiz-schedule__hint";
-    hint.textContent = CONFIRM_TEXT.dica;
-    box.appendChild(hint);
-
-    const schedule = document.createElement("div");
-    schedule.className = "quiz-schedule";
-    schedule.innerHTML =
-      '<p class="quiz-schedule__loading">' +
-      CONFIRM_TEXT.carregando +
-      "</p>" +
-      '<iframe class="quiz-schedule__iframe" src="' +
-      CONFIG.googleCalendarUrl +
-      '" title="Agendar uma conversa com a Thabata"></iframe>';
-    box.appendChild(schedule);
-
-    const iframe = schedule.querySelector("iframe");
-    const loadingMsg = schedule.querySelector(".quiz-schedule__loading");
-    iframe.addEventListener(
-      "load",
-      () => {
-        loadingMsg.hidden = true;
-      },
-      { once: true }
-    );
-
-    const openLink = document.createElement("p");
-    openLink.className = "quiz-schedule__open";
-    openLink.innerHTML =
-      '<a href="' +
-      CONFIG.googleCalendarUrl +
-      '" target="_blank" rel="noopener noreferrer">' +
-      CONFIRM_TEXT.linkAbrir +
-      "</a>";
-    box.appendChild(openLink);
-  } else {
-    const ctaP = document.createElement("p");
-    ctaP.className = "quiz-schedule__cta";
-    ctaP.innerHTML =
-      '<a class="btn" href="' +
-      CONFIG.googleCalendarUrl +
-      '" target="_blank" rel="noopener noreferrer">' +
-      CONFIRM_TEXT.botaoMobile +
-      ' <span class="btn__arrow" aria-hidden="true">→</span></a>';
-    box.appendChild(ctaP);
-  }
-
-  const waP = document.createElement("p");
-  waP.className = "quiz-schedule__wa";
-  waP.innerHTML =
+    CONFIRM_TEXT.texto +
+    "</p>" +
+    '<p class="quiz-schedule__cta"><a class="btn" href="' +
+    CONFIG.googleCalendarUrl +
+    '" target="_blank" rel="noopener noreferrer">' +
+    CONFIRM_TEXT.botao +
+    ' <span class="btn__arrow" aria-hidden="true">↗</span></a></p>' +
+    '<p class="quiz-schedule__micro">' +
+    CONFIRM_TEXT.micro +
+    "</p>" +
+    '<p class="quiz-schedule__wa">' +
     CONFIRM_TEXT.waPergunta +
     ' <a href="' +
     waUrl +
-    '" target="_blank" rel="noopener noreferrer">WhatsApp</a>.';
-  box.appendChild(waP);
+    '" target="_blank" rel="noopener noreferrer">WhatsApp</a>.</p>';
 
   els.body.appendChild(box);
   focusTitle(box.querySelector(".quiz-confirm__title"));
