@@ -115,8 +115,9 @@ const CONFIRM_TEXT = {
   // Desktop: agenda embutida (iframe)
   tituloDesktop: "Recebi seu diagnóstico!",
   subtituloDesktop: "Agora escolha um dia e horário para conversarmos sobre sua marcenaria.",
+  dica: "Escolha uma data disponível (em azul) e role para ver os horários.",
   carregando: "Buscando horários disponíveis...",
-  linkAbrir: "Abrir agenda em uma nova aba ↗",
+  linkAbrir: "Prefere visualizar a agenda inteira? Abrir no Google Agenda ↗",
   // Mobile: a própria página do Google recusa renderizar dentro de um
   // iframe em telas estreitas (mostra "Abrir em outra página"), então
   // aqui vai direto um botão que abre a agenda oficial em nova aba
@@ -433,6 +434,11 @@ function renderConfirmation() {
     "</p>";
 
   if (isDesktop) {
+    const hint = document.createElement("p");
+    hint.className = "quiz-schedule__hint";
+    hint.textContent = CONFIRM_TEXT.dica;
+    box.appendChild(hint);
+
     const schedule = document.createElement("div");
     schedule.className = "quiz-schedule";
     schedule.innerHTML =
