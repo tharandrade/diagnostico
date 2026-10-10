@@ -498,8 +498,12 @@
   flex: 0 0 auto;
 }
 
-/* Agenda do Google (etapa 5) — iframe oficial, sem agenda própria */
+/* Agenda do Google (etapa 5, só desktop) — iframe oficial, sem agenda
+   própria. .quiz-schedule só existe no DOM quando a largura é >= 48rem
+   (ver DESKTOP_MQ em quiz-engine.js); no mobile o JS nem cria o iframe,
+   então esse CSS nunca chega a renderizar nada ali. */
 .quiz-schedule {
+  position: relative;
   margin: 1.4rem 0 0.9rem;
   border: 1.5px solid #e0ddd2;
   border-radius: var(--radius);
@@ -511,6 +515,26 @@
   width: 100%;
   height: 600px;
   border: 0;
+  position: relative;
+}
+/* Mensagem "Buscando horários disponíveis..." sobreposta ao iframe
+   enquanto ele carrega; o JS esconde (atributo hidden) no evento
+   "load" do iframe. */
+.quiz-schedule__loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0 1rem;
+  text-align: center;
+  font-size: 0.92rem;
+  color: var(--c-muted);
+  background: var(--c-bg-alt);
+}
+.quiz-schedule__loading[hidden] {
+  display: none;
 }
 .quiz-schedule__open {
   text-align: center;
@@ -525,6 +549,13 @@
 .quiz-schedule__open a:hover {
   text-decoration: underline;
 }
+/* Botão "ESCOLHER DIA E HORÁRIO" (mobile, no lugar do iframe) */
+.quiz-schedule__cta {
+  margin: 1.4rem 0 1.1rem;
+}
+.quiz-schedule__cta .btn {
+  width: 100%;
+}
 .quiz-schedule__wa {
   font-size: 0.88rem;
   text-align: center;
@@ -534,11 +565,6 @@
   color: var(--c-green-dark);
   font-weight: 600;
   text-decoration: underline;
-}
-@media (max-width: 26rem) {
-  .quiz-schedule__iframe {
-    height: 520px;
-  }
 }
 
 /* Honeypot anti-spam: fora da tela, invisível também para leitores
