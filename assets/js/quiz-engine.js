@@ -408,7 +408,7 @@ function renderConfirmation() {
   hideHeader();
   els.body.textContent = "";
 
-  const waUrl = buildWhatsAppUrl(CONFIG.whatsappNumber, CONFIG.whatsappDirectMessage);
+  const waUrl = buildWhatsAppUrl(CONFIG.whatsappNumber, CONFIG.whatsappConfirmMessage);
 
   const box = document.createElement("div");
   box.className = "quiz-confirm";

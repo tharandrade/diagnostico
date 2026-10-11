@@ -9,10 +9,14 @@ export const CONFIG = {
   whatsappNumber: "5548996289329",
 
   /* Mensagem dos botões de WhatsApp DIRETO (flutuante e "Fale conosco").
-     ⚠️ Texto sugerido, ainda não é copy aprovada — confirmar com a cliente.
-     A mensagem do fim do quiz é montada em scoring.js (cita o pilar mais fraco). */
+     Texto puro: a codificação de URL é feita em buildWhatsAppUrl (scoring.js). */
   whatsappDirectMessage:
-    "Olá! Vim pelo site do Método Yuka e quero saber mais sobre o diagnóstico.",
+    "Oi, Thabata! Quero saber mais sobre o diagnóstico gratuito da marcenaria.",
+
+  /* Mensagem do link de WhatsApp da tela de confirmação (depois do envio
+     do diagnóstico), para quem prefere conversar antes de agendar. */
+  whatsappConfirmMessage:
+    "Oi, Thabata! Acabei de preencher o diagnóstico da minha marcenaria, mas preferi falar com você por aqui antes de agendar nossa conversa.",
 
   /* Vídeo do hero: YouTube Short embutido em fachada (só carrega ao clicar). */
   youtubeVideoId: "Id0ujvS9rP4",

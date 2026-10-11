@@ -39,7 +39,8 @@ assets/img/favicon.svg
 | O quê | Onde |
 | --- | --- |
 | Número do WhatsApp (real: `5548996289329`) | `assets/js/config.js` + hrefs estáticos no `index.html` |
-| Mensagem dos botões de WhatsApp direto (⚠️ texto sugerido, confirmar com a cliente) | `whatsappDirectMessage` em `assets/js/config.js` |
+| Mensagem dos botões de WhatsApp direto (flutuante e "Fale conosco") | `whatsappDirectMessage` em `assets/js/config.js` |
+| Mensagem do WhatsApp da tela de confirmação do quiz | `whatsappConfirmMessage` em `assets/js/config.js` |
 | Copy do quiz (4 etapas + confirmação — já é a copy aprovada dos prints) | `QUESTIONS`/`FORM_TEXT`/`CONFIRM_TEXT` em `assets/js/quiz-engine.js` |
 | IDs de GTM / GA4 (Pixel já instalado — só base) | `assets/js/analytics.js` (e descomente os `preconnect` no `<head>`) |
 | **URL do webhook do Make.com** (pendente) | constante `MAKE_WEBHOOK_URL` em `assets/js/config.js` |
