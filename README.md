@@ -87,8 +87,9 @@ com o truque `media="print" onload` e não bloqueia o render.
 
 Modal sobre a página (overlay escuro): cabeçalho "Etapa X de 4" + X +
 "← Voltar" (a partir da etapa 2), barra de 4 segmentos cumulativos e o
-rótulo "GRÁTIS E SEM COMPROMISSO". Etapas 1–3 são escolha única com
-avanço automático (etapa 1 em grid 2x2); etapa 4 é o formulário
+rótulo "DIAGNÓSTICO GRATUITO · CONVERSA INDIVIDUAL". Etapas 1–3 são
+escolha única com avanço automático, na ordem maior desafio →
+funcionários (grid 2x2) → demanda; etapa 4 é o formulário
 (nome/WhatsApp/e-mail + honeypot, **sem checkbox LGPD** — decisão da
 cliente, idêntico ao print) com "ENVIAR →"; a etapa 5 ("Diagnóstico
 recebido ✅", centralizada, sem cabeçalho) só abre o WhatsApp no clique

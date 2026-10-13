@@ -57,18 +57,9 @@ import { trapFocus } from "./ui.js";
 const QUESTIONS = [
   {
     id: "q1",
-    layout: "grid", // 2 colunas (2x2), como no print
-    pergunta: "Quantos funcionários tem sua marcenaria?",
-    subtitulo: "Isso ajuda a entender o tamanho da sua operação.",
-    rotulo: "Funcionários",
-    campo: "funcionarios",
-    opcoes: ["Só eu", "1 a 3", "4 a 10", "Mais de 10"],
-  },
-  {
-    id: "q2",
     layout: "lista",
     pergunta: "Qual é o maior desafio hoje?",
-    subtitulo: "Escolha a opção que mais representa seu momento.",
+    subtitulo: "Escolha a opção que mais representa o momento da sua marcenaria.",
     rotulo: "Maior desafio",
     campo: "maior_desafio",
     opcoes: [
@@ -79,6 +70,15 @@ const QUESTIONS = [
       "Quero vender mais e fechar melhor",
       "Tudo depende de mim",
     ],
+  },
+  {
+    id: "q2",
+    layout: "grid", // 2 colunas (2x2), como no print
+    pergunta: "Quantos funcionários tem sua marcenaria?",
+    subtitulo: "Isso me ajuda a entender o tamanho da sua operação.",
+    rotulo: "Funcionários",
+    campo: "funcionarios",
+    opcoes: ["Só eu", "1 a 3", "4 a 10", "Mais de 10"],
   },
   {
     id: "q3",
@@ -100,8 +100,9 @@ const TOTAL_ETAPAS = 4;
 
 /* Copy aprovada da etapa 4 (formulário) e da etapa 5 (confirmação). */
 const FORM_TEXT = {
-  titulo: "Quase lá, é só isso",
-  subtitulo: "Preencha seus dados para receber sua análise pelo WhatsApp.",
+  titulo: "Último passo: como posso falar com você?",
+  subtitulo:
+    "Informe seus dados para concluir o diagnóstico. Depois, você poderá escolher um horário para nossa conversa individual gratuita.",
   labels: { nome: "Nome completo", whatsapp: "WhatsApp", email: "E-mail" },
   placeholders: {
     nome: "Seu nome completo",
