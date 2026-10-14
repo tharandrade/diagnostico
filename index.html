@@ -29,9 +29,13 @@
   <link rel="preload" href="assets/fonts/playfair-display-700.woff2" as="font" type="font/woff2" crossorigin fetchpriority="low">
   <link rel="preload" href="assets/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin fetchpriority="low">
 
-  <!-- Foto real da Thabata na 1ª dobra: elemento de LCP da Hero —
-       preload + fetchpriority alto no <img> abaixo. -->
-  <link rel="preload" href="assets/img/thabata.jpg" as="image" fetchpriority="high">
+  <!-- Foto de fundo do hero (composição com a Thabata já integrada):
+       elemento de LCP da página. Art direction por breakpoint (fotos
+       diferentes, não só tamanhos diferentes), por isso são dois
+       preloads condicionados por media, espelhando os <source> do
+       <picture> abaixo. -->
+  <link rel="preload" href="assets/img/hero-bg-mobile.webp" as="image" type="image/webp" media="(max-width: 55.99rem)" fetchpriority="high">
+  <link rel="preload" href="assets/img/hero-bg-desktop.webp" as="image" type="image/webp" media="(min-width: 56rem)" fetchpriority="high">
 
   <!-- Habilita as animações de reveal só quando há JS (sem JS, tudo visível) -->
   <script>document.documentElement.classList.add("js")</script>
@@ -40,7 +44,7 @@
        Fonte: assets/css/critical.css — se editar lá, copie para cá
        trocando os caminhos ../fonts/ por assets/fonts/ (README.md). -->
   <style>
-:root{--c-bg:#ffffff;--c-bg-alt:#f3f1ea;--c-card:#f6eade;--c-green-dark:#11312b;--c-green-dark-hover:#1a4b40;--c-green:#11312b;--c-cobre:#c16e44;--c-red:#c6402f;--c-ink:#21271e;--c-text:#454b41;--c-body:#575d53;--c-muted:#8b8f85;--c-white:#fff;--radius:12px;--shadow-card:0 2px 10px rgba(33,39,30,.06);--font-serif:"Playfair Display",Georgia,"Times New Roman",serif;--font-sans:"Inter",system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+:root{--c-bg:#ffffff;--c-bg-alt:#f3f1ea;--c-card:#f6eade;--c-green-dark:#11312b;--c-green-dark-hover:#1a4b40;--c-green:#11312b;--c-cobre:#c16e44;--c-cobre-btn:#aa5c35;--c-cobre-hover:#8f4d2c;--c-cobre-light:#d9a07e;--c-red:#c6402f;--c-ink:#21271e;--c-text:#454b41;--c-body:#575d53;--c-muted:#8b8f85;--c-white:#fff;--radius:12px;--shadow-card:0 2px 10px rgba(33,39,30,.06);--font-serif:"Playfair Display",Georgia,"Times New Roman",serif;--font-sans:"Inter",system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
 @font-face{font-family:"Playfair Display";font-style:normal;font-weight:700;font-display:swap;src:url("assets/fonts/playfair-display-700.woff2") format("woff2")}
 @font-face{font-family:"Inter";font-style:normal;font-weight:400 700;font-display:swap;src:url("assets/fonts/inter-var.woff2") format("woff2")}
 *,*::before,*::after{box-sizing:border-box}
@@ -60,26 +64,40 @@ h1,h2,h3{font-family:var(--font-serif);font-weight:700;color:var(--c-ink);line-h
 .btn:hover{background:var(--c-green-dark-hover)}
 .btn:active{transform:translateY(1px)}
 :is(a,button,input,[tabindex]):focus-visible{outline:3px solid var(--c-green);outline-offset:2px;border-radius:4px}
-.hero{padding:3.25rem 0 3rem;text-align:center}
-.hero__grid{display:grid;gap:2.75rem;align-items:center}
-.hero__copy{max-width:40rem;margin-inline:auto}
-.hero__title{font-size:clamp(2.05rem,5.2vw,2.9rem);margin-bottom:1.15rem}
-.hero__title em{font-style:normal;color:var(--c-green)}
-.hero__lead{max-width:none}
-.hero__cta{margin:1.5rem 0 0}
-.hero__micro{font-size:.82rem;color:var(--c-muted);max-width:30rem;margin:.95rem auto 0}
-.hero__media{margin-top:.5rem}
-.hero__media .media-frame{width:min(100%,19rem)}
-.hero__media-caption{text-align:center;max-width:20rem;margin:1.1rem auto 0}
-.hero__media-caption strong{display:block;font-family:var(--font-serif);color:var(--c-ink);font-size:1.05rem;margin-bottom:.3rem}
-.hero__media-caption span{color:var(--c-muted);font-size:.86rem}
+.hero{position:relative;background:var(--c-green-dark);color:var(--c-card);overflow:hidden}
+.hero__bg{display:block;position:relative;overflow:hidden;height:clamp(230px,64vw,340px)}
+.hero__bg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 22%}
+.hero__bg::after{content:"";position:absolute;left:0;right:0;bottom:0;height:40%;background:linear-gradient(to bottom,rgba(17,49,43,0),var(--c-green-dark));pointer-events:none}
+.hero__inner{position:relative;z-index:1;padding:.9rem 0 2.25rem}
+.hero__kicker{display:flex;align-items:center;gap:.6rem;color:var(--c-cobre-light);font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin:0 0 .6rem}
+.hero__kicker::before{content:"";width:1.75rem;height:2px;background:var(--c-cobre-light);flex:0 0 auto}
+.hero__title{color:var(--c-card);font-size:clamp(2.05rem,7vw,2.9rem);margin-bottom:.85rem}
+.hero__title em{font-style:normal;color:var(--c-cobre)}
+.hero__lead{max-width:none;color:rgba(246,234,222,.92);margin-bottom:.7rem}
+.hero__cta{margin:1.1rem 0 0}
+.hero__cta .btn{background:var(--c-cobre-btn);width:100%}
+.hero__cta .btn:hover{background:var(--c-cobre-hover)}
+.hero :is(a,button,input,[tabindex]):focus-visible{outline-color:var(--c-card)}
+.hero__meta{list-style:none;display:flex;flex-wrap:wrap;gap:.6rem 1.3rem;margin:1.15rem 0 0;padding:0;font-size:.82rem;color:rgba(246,234,222,.85)}
+.hero__meta li{display:flex;align-items:center;gap:.45rem}
+.hero__meta svg{width:1.05rem;height:1.05rem;flex:0 0 auto;color:var(--c-cobre)}
+.hero__micro{font-size:.82rem;color:rgba(246,234,222,.75);max-width:30rem;margin:.95rem 0 0}
+.hero__identity{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 @media (min-width:56rem){
-.hero{padding:4.5rem 0 5rem;text-align:left}
-.hero__grid{grid-template-columns:1.1fr .9fr;gap:3.5rem}
-.hero__copy{max-width:none;margin-inline:0}
-.hero__micro{margin:.95rem 0 0}
-.hero__media{margin-top:0}
-.hero__media-caption{margin-inline:auto}
+.hero{min-height:42rem;display:flex}
+.hero__stage{position:relative;width:min(92%,86rem);margin-inline:auto;display:flex;align-items:center}
+.hero__bg{position:absolute;top:0;right:0;bottom:0;left:auto;width:calc((100vw - min(92vw,86rem))/2 + (min(92vw,86rem) * .46));height:auto;z-index:0;overflow:hidden}
+.hero__bg::after{content:"";inset:0;height:auto;background:linear-gradient(to right,var(--c-green-dark) 0%,rgba(17,49,43,0) 30%)}
+.hero__bg img{width:100%;height:100%;object-position:68% 50%;transform:scale(1.08);transform-origin:68% 18%}
+.hero__inner{padding:0;max-width:none;width:50%;margin-inline:0;padding-left:clamp(2.5rem,6vw,6rem)}
+.hero__kicker{margin:0 0 1rem}
+.hero__title{margin-bottom:1.15rem;font-size:3.2rem}
+.hero__lead{margin-bottom:1rem;max-width:34rem;font-size:1.1rem;line-height:1.6}
+.hero__cta{margin:1.5rem 0 0}
+.hero__cta .btn{width:auto;min-width:17rem;min-height:3.35rem;padding:1.1rem 2.4rem;font-size:.85rem}
+.hero__identity{display:inline-block;position:static;width:auto;height:auto;padding:1rem 0 0;margin:1.5rem 0 0;overflow:visible;clip:auto;white-space:normal;border:0;border-top:1px solid rgba(246,234,222,.18);text-align:left;max-width:none;text-shadow:none}
+.hero__identity strong{display:block;font-family:var(--font-serif);font-weight:700;color:rgba(246,234,222,.88);font-size:.88rem;margin-bottom:.3rem}
+.hero__identity span{display:block;color:rgba(246,234,222,.75);font-size:.82rem}
 }
 .media-frame{position:relative;aspect-ratio:4/5;width:min(100%,23.5rem);margin-inline:auto;background:#dcd8cc;border-radius:18px;overflow:hidden;box-shadow:0 14px 34px rgba(33,39,30,.14)}
 .media-frame--photo{aspect-ratio:3/4;border-radius:var(--radius)}
@@ -135,28 +153,40 @@ body.has-sticky-cta .float-wa{bottom:5.6rem}
     <symbol id="i-ig" viewBox="0 0 24 24"><rect x="2.5" y="2.5" width="19" height="19" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.3" cy="6.7" r="1.3"/></symbol>
     <symbol id="i-yt" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2 31.4 31.4 0 000 12a31.4 31.4 0 00.5 5.8 3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1A31.4 31.4 0 0024 12a31.4 31.4 0 00-.5-5.8zM9.6 15.6V8.4L15.8 12l-6.2 3.6z"/></symbol>
     <symbol id="i-chat" viewBox="0 0 24 24"><path d="M12 3.2c-4.9 0-8.8 3.5-8.8 7.8 0 2 .85 3.8 2.25 5.15L4.4 20.6l4.5-1.55c1 .28 2 .43 3.1.43 4.9 0 8.8-3.5 8.8-7.8S16.9 3.2 12 3.2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-form" viewBox="0 0 24 24"><path d="M6 2.5h8.5L19 7v14a1 1 0 01-1 1H6a1 1 0 01-1-1V3.5a1 1 0 011-1z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.3 12.2h7.4M8.3 15.7h7.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3.2" y="5.2" width="17.6" height="15.6" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.2 9.4h17.6M7.8 2.8v4M16.2 2.8v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
   </svg>
 
   <main>
 
-    <!-- ============ 1. HERO ============ -->
+    <!-- ============ 1. HERO ============
+         Redesign editorial: a foto (com o ambiente de marcenaria já
+         integrado ao fundo verde-escuro) é a própria imagem de fundo
+         do hero — art direction por breakpoint via <picture> (fotos
+         diferentes, não um reescalonamento da mesma foto). Todo o
+         texto/CTA é HTML real sobreposto (nunca parte da imagem). -->
     <section class="hero" id="hero" aria-labelledby="hero-title">
-      <div class="container hero__grid">
-        <div class="hero__copy">
-          <h1 class="hero__title" id="hero-title">Sua marcenaria vende, entrega, mas <em>o dinheiro não sobra?</em></h1>
-          <p class="hero__lead">Você trabalha o mês inteiro, resolve problemas e, mesmo assim, não vê o resultado de tanto esforço?</p>
+      <picture class="hero__bg">
+        <source media="(min-width:56rem)" srcset="assets/img/hero-bg-desktop.webp" type="image/webp">
+        <source media="(min-width:56rem)" srcset="assets/img/hero-bg-desktop.jpg" type="image/jpeg">
+        <source srcset="assets/img/hero-bg-mobile.webp" type="image/webp">
+        <img src="assets/img/hero-bg-mobile.jpg" width="941" height="1672" alt="" loading="eager" fetchpriority="high" decoding="async">
+      </picture>
+      <div class="hero__stage">
+        <div class="container hero__inner">
+          <p class="hero__kicker">Método Yuka · Gestão para marcenarias</p>
+          <h1 class="hero__title" id="hero-title">Sua marcenaria vende, entrega, mas o dinheiro <em>não sobra?</em></h1>
           <p class="hero__lead">Responda algumas perguntas sobre sua marcenaria e agende uma conversa individual e gratuita comigo para entendermos os desafios do seu negócio.</p>
           <p class="hero__cta">
             <button type="button" class="btn js-open-quiz" data-origin="hero">QUERO FAZER O DIAGNÓSTICO <span class="btn__arrow" aria-hidden="true">→</span></button>
           </p>
-          <p class="hero__micro">Formulário rápido e gratuito. Suas respostas serão o ponto de partida para uma conversa individual comigo.</p>
+          <ul class="hero__meta">
+            <li><svg aria-hidden="true"><use href="#i-form"/></svg>Formulário rápido</li>
+            <li><svg aria-hidden="true"><use href="#i-calendar"/></svg>Agendamento online</li>
+            <li><svg aria-hidden="true"><use href="#i-chat"/></svg>Conversa individual</li>
+          </ul>
+          <p class="hero__identity"><strong>Thabata Andrade</strong><span>Sócia da Yucca Móveis por 8 anos · Criadora do Método Yuka</span></p>
           <noscript><p class="hero__micro">Para fazer o diagnóstico, ative o JavaScript no seu navegador.</p></noscript>
-        </div>
-        <div class="hero__media">
-          <div class="media-frame media-frame--photo">
-            <img src="assets/img/thabata.jpg" width="640" height="800" alt="Thabata Andrade, criadora do Método Yuka" loading="eager" fetchpriority="high" decoding="async">
-          </div>
-          <p class="hero__media-caption"><strong>Thabata Andrade</strong><span>Fui sócia da Yucca Móveis por 8 anos e sou criadora do Método Yuka.</span></p>
         </div>
       </div>
     </section>
